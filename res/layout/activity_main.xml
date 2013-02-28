@@ -1,0 +1,38 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity" 
+    android:orientation="vertical" >
+    
+	<TextView
+	    android:id="@+id/currentState"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content" />
+	
+	<!--Button
+	    android:id="@+id/losePuck"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:text="Reset Puck Status" /-->
+	
+	<SeekBar
+	    android:id="@+id/throttleBar"
+	    android:max="1000"
+	    android:progress="0"
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content" />
+	
+	<SeekBar
+	    android:id="@+id/steeringBar"
+	    android:max="1000"
+	    android:progress="0"
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content" />
+
+	<!--TextView
+	    android:id="@+id/lastCommandView"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content" /-->
+	
+</LinearLayout>
