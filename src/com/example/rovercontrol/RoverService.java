@@ -23,7 +23,6 @@ import android.os.Binder;
 
 public class RoverService extends IOIOService {
 	
-	private double irLevel_;
 	private final int PISTON_PIN = 12;
 	private final int IR_PIN = 40;
 	
@@ -39,7 +38,7 @@ public class RoverService extends IOIOService {
 	
 	private RobotMotion robotMotion_;
 	private final Context context = this;
-	
+	//for testing only
 	private MotorDriver motorDriver_;
 	
 	@Override
@@ -55,6 +54,8 @@ public class RoverService extends IOIOService {
 				piston_ = new GrabberPiston(ioio_, PISTON_PIN);
 				
 				//robotMotion_ = new RobotMotion(ioio_, context);
+				
+				//testing
 				motorDriver_ = new MotorDriver(ioio_, 1, 15, 128);
 				try {
 					motorDriver_.setSpeed(1.0);
@@ -63,6 +64,7 @@ public class RoverService extends IOIOService {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+				
 				//_stateMachine.changeState(new RetrievePuckState(irSensor_, piston_));
 				//_stateMachine.changeState(new DrunkTestState(robotMotion_));
 				//robotMotion_.setSpeed(1);
@@ -81,10 +83,6 @@ public class RoverService extends IOIOService {
 			}
 		};
 	}
-
-	public double getIRLevel() {
-		return irLevel_;
-	}	
 	
 	public String getCurrentState() {
 		return null;
