@@ -14,7 +14,14 @@ public class MotorDriver {
 	private OutputStream out;
 	private int Address;
 
-	
+	/**
+	 * 
+	 * @param ioioInstance IOIO object providing the UART
+	 * @param rxPin required by IOIO API, unused.
+	 * @param txPin pin connected to Sabertooth compatible UART input
+	 * @param AddressIn Address of Sabertooth compatible device
+	 * @throws ConnectionLostException
+	 */
 	public MotorDriver(IOIO ioioInstance, int rxPin, int txPin, int AddressIn) throws ConnectionLostException
 	{
 		ioio = ioioInstance;
