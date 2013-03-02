@@ -1,4 +1,7 @@
 package com.example.rovercontrol;
+import java.io.IOException;
+
+import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import ioio.lib.util.android.IOIOService;
@@ -21,35 +24,23 @@ import android.os.Binder;
 public class RoverService extends IOIOService {
 	
 	private double irLevel_;
-	private final int THROTTLE_PIN = 47;
-	private final int STEERING_PIN = 46;
 	private final int PISTON_PIN = 12;
 	private final int IR_PIN = 40;
 	
-	/*private final int PISTON_DOWN = 1800;
-	private final int PISTON_UP = 1200;
-	//private final int PISTON_IDLE = 1500;
-	private final int PISTON_PAUSE = 250;*/
 	
 	private DigitalOutput led_;
-	
-	//private PwmOutput throttle_;
-	//private PwmOutput steering_;
-	//private PwmOutput piston_;
 	private GrabberPiston piston_;
-	
 	private IRSensor irSensor_;
-	//private PulseInput leftEncoder_;
-	//private PulseInput rightEncoder_;
 
 	private long _lastNanoTime;
 	private StateMachine _stateMachine;
-	//private boolean havePuck_ = false;
-	//private boolean seePuck_ = false;
-	//private float speed_ = 0;
-	//private float direction_ = 0;
 	
 	//private MothershipConnection mothershipConnection = new MothershipConnection();
+	
+	private RobotMotion robotMotion_;
+	private final Context context = this;
+	
+	private MotorDriver motorDriver_;
 	
 	@Override
 	protected IOIOLooper createIOIOLooper() {
@@ -60,13 +51,22 @@ public class RoverService extends IOIOService {
 			protected void setup() throws ConnectionLostException,
 					InterruptedException {
 				led_ = ioio_.openDigitalOutput(IOIO.LED_PIN);
-				//throttle_ = ioio_.openPwmOutput(THROTTLE_PIN, 20);
-				//steering_ = ioio_.openPwmOutput(STEERING_PIN, 20);
-				//piston_ = ioio_.openPwmOutput(PISTON_PIN, 20);
 				irSensor_ = new IRSensor(ioio_, IR_PIN);
 				piston_ = new GrabberPiston(ioio_, PISTON_PIN);
 				
-				_stateMachine.changeState(new RetrievePuckState(irSensor_, piston_));
+				//robotMotion_ = new RobotMotion(ioio_, context);
+				motorDriver_ = new MotorDriver(ioio_, 1, 15, 128);
+				try {
+					motorDriver_.setSpeed(1.0);
+					motorDriver_.setRotationSpeed(0.0);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				//_stateMachine.changeState(new RetrievePuckState(irSensor_, piston_));
+				//_stateMachine.changeState(new DrunkTestState(robotMotion_));
+				//robotMotion_.setSpeed(1);
+				
 				
 				_lastNanoTime = System.nanoTime();
 			}
@@ -74,70 +74,17 @@ public class RoverService extends IOIOService {
 			@Override
 			public void loop() throws ConnectionLostException,
 					InterruptedException {
-				
 				led_.write(true);
-				
-				_stateMachine.update(System.nanoTime() - _lastNanoTime);
-				
-				_lastNanoTime = System.nanoTime();
-				
-				//move
-				/*throttle_.setPulseWidth((speed_ * 500) + 1500);
-				steering_.setPulseWidth((direction_ * 500) +1500);
-				
-				//capture puck
-				irLevel_ = irSensor_.voltage();
-				seePuck_ = irLevel_ > 0.8;
-				if(!havePuck_ && seePuck_) {
-					piston_ = ioio_.openPwmOutput(PISTON_PIN, 100);
-					piston_.setPulseWidth(PISTON_DOWN);
-					Thread.sleep(PISTON_PAUSE);
-					piston_.setPulseWidth(PISTON_UP);
-					Thread.sleep(PISTON_PAUSE);
-					piston_.setPulseWidth(PISTON_DOWN);
-					Thread.sleep(PISTON_PAUSE);
-					piston_.setPulseWidth(PISTON_UP);
-					Thread.sleep(PISTON_PAUSE);
-					piston_.close();
-					piston_.grab();
-					havePuck_ = true;
-				}*/
-				led_.write(false);
+				//_stateMachine.update(System.nanoTime() - _lastNanoTime);
+				//_lastNanoTime = System.nanoTime();
+				//led_.write(false);
 			}
 		};
 	}
 
 	public double getIRLevel() {
 		return irLevel_;
-	}
-	
-	/*public boolean hasPuck() {
-		//return havePuck_;
 	}	
-	
-	public boolean seePuck() {
-		return seePuck_;
-	}
-	
-	public void losePuck() {
-		havePuck_ = false;
-	}
-	
-	public void setThrottle(float value) {
-		speed_ = value;
-	}
-	
-	public void setSteering(float value) {
-		direction_ = value;
-	}
-	
-	public String getLastCommand() {
-		if(!mothershipConnection.messagesFromServer.isEmpty()) {
-			return mothershipConnection.messagesFromServer.poll();
-		} else {
-			return "No commands";
-		//}
-	}*/
 	
 	public String getCurrentState() {
 		return null;

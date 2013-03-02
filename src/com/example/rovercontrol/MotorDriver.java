@@ -28,6 +28,12 @@ public class MotorDriver {
 		uart = ioio.openUart(rxPin, txPin, 19200, Uart.Parity.NONE, Uart.StopBits.ONE);
 		out = uart.getOutputStream();
 		Address = AddressIn;
+		try {
+			out.write(170);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} //send baud rate detection byte
 	}
 	
 	public void setSpeed(double speed) throws IOException
@@ -48,7 +54,7 @@ public class MotorDriver {
 		sendPacket(speedInput, command);
 	}
 	
-	public void setRotaionalSpeed(double rotationalSpeed) throws IOException
+	public void setRotationSpeed(double rotationalSpeed) throws IOException
 	{
 		int command = 8;
 		double speedInput = 0;
