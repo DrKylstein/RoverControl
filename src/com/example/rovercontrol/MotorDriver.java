@@ -1,4 +1,4 @@
-package ioio.examples.hello;
+package com.example.rovercontrol;
 
 import java.io.IOException;
 import java.io.OutputStream;
