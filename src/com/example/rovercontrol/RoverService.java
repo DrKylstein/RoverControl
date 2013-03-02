@@ -23,11 +23,14 @@ import android.os.Binder;
 
 public class RoverService extends IOIOService {
 	
-	private final int PISTON_PIN = 12;
+	/*private final int PISTON_PIN = 12;
 	private final int IR_PIN = 40;
 	
 	
+	*/
 	private DigitalOutput led_;
+	private boolean ledOn = false;
+	/*
 	private GrabberPiston piston_;
 	private IRSensor irSensor_;
 
@@ -37,7 +40,7 @@ public class RoverService extends IOIOService {
 	//private MothershipConnection mothershipConnection = new MothershipConnection();
 	
 	private RobotMotion robotMotion_;
-	private final Context context = this;
+	private final Context context = this;*/
 	//for testing only
 	private MotorDriver motorDriver_;
 	
@@ -49,19 +52,28 @@ public class RoverService extends IOIOService {
 			@Override
 			protected void setup() throws ConnectionLostException,
 					InterruptedException {
+				System.out.println("rover_debug: IOIO setup begin");
 				led_ = ioio_.openDigitalOutput(IOIO.LED_PIN);
-				irSensor_ = new IRSensor(ioio_, IR_PIN);
-				piston_ = new GrabberPiston(ioio_, PISTON_PIN);
+				//irSensor_ = new IRSensor(ioio_, IR_PIN);
+				//piston_ = new GrabberPiston(ioio_, PISTON_PIN);
 				
 				//robotMotion_ = new RobotMotion(ioio_, context);
 				
 				//testing
-				motorDriver_ = new MotorDriver(ioio_, 1, 15, 128);
+				
+				try {
+					motorDriver_ = new MotorDriver(ioio_, 14, 128);
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					System.out.println("rover_debug: IOException in MotorDriver()");
+					e1.printStackTrace();
+				}
 				try {
 					motorDriver_.setSpeed(1.0);
 					motorDriver_.setRotationSpeed(0.0);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
+					System.out.println("rover_debug: IOException in MotorDriver.setSpeed");
 					e.printStackTrace();
 				}
 				
@@ -70,13 +82,19 @@ public class RoverService extends IOIOService {
 				//robotMotion_.setSpeed(1);
 				
 				
-				_lastNanoTime = System.nanoTime();
+				//_lastNanoTime = System.nanoTime();
+				System.out.println("rover_debug: IOIO setup end");
 			}
 
 			@Override
 			public void loop() throws ConnectionLostException,
 					InterruptedException {
-				led_.write(true);
+				System.out.println("rover_debug: IOIO loop enter");
+				if(!ledOn) {
+					led_.write(true);
+					ledOn = true;
+				}
+				System.out.println("rover_debug: IOIO loop exit");
 				//_stateMachine.update(System.nanoTime() - _lastNanoTime);
 				//_lastNanoTime = System.nanoTime();
 				//led_.write(false);

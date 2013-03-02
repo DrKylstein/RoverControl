@@ -30,8 +30,7 @@ public class RobotMotion implements SensorEventListener {
 	private double rotationSpeed_;
 	private double actualRotationSpeed_;
 	
-	private final int TX_PIN_ = 15;
-	private final int RX_PIN_ = 1; //set to something unused
+	private final int TX_PIN_ = 14;
 	private final int ST_ADDR_ = 128;
 	private final double ONE_RPS = 0.1;
 	private final double WHEEL_CIRC = 0.20;
@@ -53,8 +52,8 @@ public class RobotMotion implements SensorEventListener {
 		}
 	}
 	
-	public RobotMotion(IOIO ioio, Context context) throws ConnectionLostException {
-		driver_ = new MotorDriver(ioio, RX_PIN_, TX_PIN_, ST_ADDR_);
+	public RobotMotion(IOIO ioio, Context context) throws ConnectionLostException, IOException {
+		driver_ = new MotorDriver(ioio, TX_PIN_, ST_ADDR_);
 		pid_ = new PidController();
 		pid_.Reset(0, MAX_RADPS_, 0, P_GAIN_, I_GAIN_, D_GAIN_);
 		pidTimer_ = new Timer();

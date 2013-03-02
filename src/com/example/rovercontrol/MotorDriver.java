@@ -17,23 +17,18 @@ public class MotorDriver {
 	/**
 	 * 
 	 * @param ioioInstance IOIO object providing the UART
-	 * @param rxPin required by IOIO API, unused.
 	 * @param txPin pin connected to Sabertooth compatible UART input
 	 * @param AddressIn Address of Sabertooth compatible device
 	 * @throws ConnectionLostException
+	 * @throws IOException 
 	 */
-	public MotorDriver(IOIO ioioInstance, int rxPin, int txPin, int AddressIn) throws ConnectionLostException
+	public MotorDriver(IOIO ioioInstance, int txPin, int AddressIn) throws ConnectionLostException, IOException
 	{
 		ioio = ioioInstance;
-		uart = ioio.openUart(rxPin, txPin, 19200, Uart.Parity.NONE, Uart.StopBits.ONE);
+		uart = ioio.openUart(IOIO.INVALID_PIN, txPin, 19200, Uart.Parity.NONE, Uart.StopBits.ONE);
 		out = uart.getOutputStream();
 		Address = AddressIn;
-		try {
-			out.write(170);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} //send baud rate detection byte
+		out.write(170); //send baud rate detection byte
 	}
 	
 	public void setSpeed(double speed) throws IOException
@@ -79,7 +74,7 @@ public class MotorDriver {
 		out.write((byte)Address);
 		out.write((byte)command);
 		out.write((byte)input);
-		out.write(((byte)Address + (byte)0 + (byte)input) & checksum); 
+		out.write(((byte)Address + (byte)command + (byte)input) & checksum); 
 	}
 	
 }
