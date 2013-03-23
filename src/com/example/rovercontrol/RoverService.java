@@ -1,5 +1,6 @@
 package com.example.rovercontrol;
 import java.io.IOException;
+import java.io.OutputStream;
 
 import android.content.Context;
 import android.content.Intent;
@@ -10,6 +11,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import ioio.lib.api.DigitalOutput;
+import ioio.lib.api.Uart;
 //import ioio.lib.api.PwmOutput;
 //import ioio.lib.api.PulseInput;
 //import ioio.lib.api.AnalogInput;
@@ -43,6 +45,8 @@ public class RoverService extends IOIOService {
 	private final Context context = this;*/
 	//for testing only
 	private MotorDriver motorDriver_;
+	private Uart uart_;
+	private OutputStream out_;
 	
 	@Override
 	protected IOIOLooper createIOIOLooper() {
@@ -60,22 +64,18 @@ public class RoverService extends IOIOService {
 				//robotMotion_ = new RobotMotion(ioio_, context);
 				
 				//testing
+				//uart_ = ioio_.openUart(IOIO.INVALID_PIN, 14, 9600, Uart.Parity.NONE, Uart.StopBits.ONE);
+				//out_ = uart_.getOutputStream();
+
 				
 				try {
-					motorDriver_ = new MotorDriver(ioio_, 14, 128);
+					motorDriver_ = new MotorDriver(ioio_, 14);
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					System.out.println("rover_debug: IOException in MotorDriver()");
 					e1.printStackTrace();
 				}
-				try {
-					motorDriver_.setSpeed(1.0);
-					motorDriver_.setRotationSpeed(0.0);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					System.out.println("rover_debug: IOException in MotorDriver.setSpeed");
-					e.printStackTrace();
-				}
+				
 				
 				//_stateMachine.changeState(new RetrievePuckState(irSensor_, piston_));
 				//_stateMachine.changeState(new DrunkTestState(robotMotion_));
@@ -89,12 +89,27 @@ public class RoverService extends IOIOService {
 			@Override
 			public void loop() throws ConnectionLostException,
 					InterruptedException {
-				System.out.println("rover_debug: IOIO loop enter");
+				//System.out.println("rover_debug: IOIO loop enter");
 				if(!ledOn) {
 					led_.write(true);
 					ledOn = true;
 				}
-				System.out.println("rover_debug: IOIO loop exit");
+				/*try {
+					out_.write(170);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}*/
+
+				try {
+					motorDriver_.setSpeed(1.0);
+					motorDriver_.setRotationSpeed(0.0);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					System.out.println("rover_debug: IOException in MotorDriver.setSpeed");
+					e.printStackTrace();
+				}
+				//System.out.println("rover_debug: IOIO loop exit");
 				//_stateMachine.update(System.nanoTime() - _lastNanoTime);
 				//_lastNanoTime = System.nanoTime();
 				//led_.write(false);
