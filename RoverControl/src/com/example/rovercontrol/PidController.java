@@ -41,7 +41,8 @@ public class PidController
 		{
 			mSumOfError += error;
 		}
-		solution = mP*error + mI*mSumOfError*mDT + mD*(error - mPreviousError)/mDT;
+		solution = (mP*error + mI*mSumOfError*mDT + mD*(error - mPreviousError))/mDT;
+		System.out.printf("rover_debug PID: %f\n", solution);
 		mPreviousError = error;
 
 		//  Add any offset for the system

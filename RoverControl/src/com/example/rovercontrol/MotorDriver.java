@@ -36,11 +36,15 @@ public class MotorDriver {
 	
 	public void setSpeed(double speed) throws IOException
 	{
+		if(speed > 1) speed = 1;
+		if(speed < -1) speed = -1; 
 		sendPacket(speed, 1);
 	}
 	
 	public void setRotationSpeed(double rotationalSpeed) throws IOException
 	{
+		if(rotationalSpeed > 1) rotationalSpeed = 1;
+		if(rotationalSpeed < -1) rotationalSpeed = -1;
 		sendPacket(rotationalSpeed, 0);
 	}
 	
