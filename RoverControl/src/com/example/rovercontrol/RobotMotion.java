@@ -35,15 +35,16 @@ public class RobotMotion implements SensorEventListener {
 	private final double WHEEL_CIRC = 0.20;
 	
 	private final double MAX_RADPS_ = 12.0;
-	private final double P_GAIN_ = 1.0;
-	private final double I_GAIN_ = 1.0;
+	private final double P_GAIN_ = 10.0;
+	private final double I_GAIN_ = 0.0;
 	private final double D_GAIN_ = 1.0;
 	
 	private class PidTask_ extends TimerTask {
 		@Override
 		public void run() {
 			try {
-				driver_.setSpeed(pid_.UpdatePID(rotationSpeed_ - actualRotationSpeed_));
+				System.out.printf("rover_debug gyro: %f", actualRotationSpeed_);
+				driver_.setRotationSpeed(pid_.UpdatePID(rotationSpeed_ - actualRotationSpeed_));
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -55,8 +56,11 @@ public class RobotMotion implements SensorEventListener {
 		driver_ = new MotorDriver(ioio, TX_PIN_);
 		pid_ = new PidController();
 		pid_.Reset(0, MAX_RADPS_, 0, P_GAIN_, I_GAIN_, D_GAIN_);
+		pid_.SetRate(0.1);
+		pid_.mLowerBound = -1;
+		pid_.mUpperBound = 1;
 		pidTimer_ = new Timer();
-		pidTimer_.scheduleAtFixedRate(new PidTask_(), 0, 10000);
+		pidTimer_.scheduleAtFixedRate(new PidTask_(), 0, 100);
 		sensorManager_ = (SensorManager)context.getSystemService(Context.SENSOR_SERVICE);
 		gyroscope_ = sensorManager_.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
 		sensorManager_.registerListener(this, gyroscope_, SensorManager.SENSOR_DELAY_GAME);
@@ -67,7 +71,7 @@ public class RobotMotion implements SensorEventListener {
 	 */
 	public void setSpeed(double mps) {
 		try {
-			driver_.setSpeed((mps / WHEEL_CIRC) * ONE_RPS);
+			driver_.setSpeed(mps);//driver_.setSpeed((mps / WHEEL_CIRC) * ONE_RPS);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

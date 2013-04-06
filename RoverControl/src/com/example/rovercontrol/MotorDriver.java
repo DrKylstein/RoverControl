@@ -48,11 +48,12 @@ public class MotorDriver {
 	{
 		int value = 0;
 		if(input < 0) {
-			value = (int) ((Math.abs(input)*62));
+			value = (int) (62-(Math.abs(input)*62));
 		} else {
 			value = (int) (63+(input*64));
 		}
-		out.write(value | (command << 7));
+		if(command == 1) value |= 0x80;
+		out.write(value);
 	}
 	
 }

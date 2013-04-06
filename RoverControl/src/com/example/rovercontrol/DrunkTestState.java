@@ -21,8 +21,7 @@ public class DrunkTestState implements State {
 	@Override
 	public void onEnter() {
 		// TODO Auto-generated method stub
-		robotMotion_.setSpeed(1);
-		robotMotion_.setRotationSpeed(0);
+
 	}
 
 	/* (non-Javadoc)
@@ -40,7 +39,9 @@ public class DrunkTestState implements State {
 	@Override
 	public void update(long dtNanos, StateMachine machine) {
 		// TODO Auto-generated method stub
-		
+		robotMotion_.setSpeed(0.5);
+		robotMotion_.setRotationSpeed(0.0);		
+		System.out.println("rover_debug drunktest_loop");
 	}
 
 	/* (non-Javadoc)
