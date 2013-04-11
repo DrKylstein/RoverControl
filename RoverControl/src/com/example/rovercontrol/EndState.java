@@ -7,13 +7,13 @@ package com.example.rovercontrol;
  * @author kyle
  *
  */
-public class EndState implements State {
+public class EndState implements State<Robot> {
 
 	/* (non-Javadoc)
 	 * @see com.example.rovercontrol.State#onEnter()
 	 */
 	@Override
-	public void onEnter() {
+	public void onEnter(Robot robot) {
 		// TODO Auto-generated method stub
 
 	}
@@ -22,7 +22,7 @@ public class EndState implements State {
 	 * @see com.example.rovercontrol.State#onExit()
 	 */
 	@Override
-	public void onExit() {
+	public void onExit(Robot robot) {
 		// TODO Auto-generated method stub
 
 	}
@@ -31,7 +31,7 @@ public class EndState implements State {
 	 * @see com.example.rovercontrol.State#update(long, com.example.rovercontrol.StateMachine)
 	 */
 	@Override
-	public void update(long dtNanos, StateMachine machine) {
+	public void update(long dtNanos, Robot robot) {
 		// TODO Auto-generated method stub
 
 	}

@@ -3,7 +3,6 @@
  */
 package com.example.rovercontrol;
 
-import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -12,9 +11,6 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.content.Context;
-
-import ioio.lib.api.IOIO;
-import ioio.lib.api.exception.ConnectionLostException;
 
 /**
  * @author kyle
@@ -27,14 +23,8 @@ public class RobotMotion implements SensorEventListener {
 	private Timer pidTimer_;
 	private final SensorManager sensorManager_;
     private final Sensor gyroscope_;
-	private double rotationSpeed_;
 	private double actualRotationSpeed_;
-	
-	private final int TX_PIN_ = 14;
-	private final double ONE_RPS = 0.1;
-	private final double WHEEL_CIRC = 0.20;
-	
-	private final double MAX_RADPS_ = 12.0;
+	private double _speed;
 	
 	private final double P_GAIN_ = 0.06;
 	private final double I_GAIN_ = 0.0;
@@ -44,22 +34,15 @@ public class RobotMotion implements SensorEventListener {
 	private class PidTask_ extends TimerTask {
 		@Override
 		public void run() {
-			try {
-				System.out.printf("rover_debug gyro: %f", actualRotationSpeed_);
-				//driver_.setRotationSpeed(pid_.UpdatePID(rotationSpeed_ - actualRotationSpeed_));
-				driver_.setRotationSpeed(pid_.update(actualRotationSpeed_));
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			System.out.printf("rover_debug gyro: %f", actualRotationSpeed_);
+			//driver_.setRotationSpeed(pid_.UpdatePID(rotationSpeed_ - actualRotationSpeed_));
+			driver_.setRotationSpeed(pid_.update(actualRotationSpeed_));
+			driver_.setSpeed(_speed);
 		}
 	}
 	
-	public RobotMotion(IOIO ioio, Context context) throws ConnectionLostException, IOException {
-		driver_ = new MotorDriver(ioio, TX_PIN_);
-		//pid_ = new PidController();
-		//pid_.Reset(-1, 1, 0, P_GAIN_, I_GAIN_, D_GAIN_);
-		//pid_.SetRate(0.1);
+	public RobotMotion(MotorDriver driver, Context context) {
+		driver_ = driver;
 		pid_ = new PID(P_GAIN_, I_GAIN_, D_GAIN_, _INTERVAL);
 		pidTimer_ = new Timer();
 		pidTimer_.scheduleAtFixedRate(new PidTask_(), 0, (long) (_INTERVAL*1000));
@@ -71,20 +54,14 @@ public class RobotMotion implements SensorEventListener {
 	 * 
 	 * @param mps speed in approximate meters/second
 	 */
-	public void setSpeed(double mps) {
-		try {
-			driver_.setSpeed(mps);//driver_.setSpeed((mps / WHEEL_CIRC) * ONE_RPS);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	public void setSpeed(double speed) {
+		_speed = speed; //driver_.setSpeed(mps);//driver_.setSpeed((mps / WHEEL_CIRC) * ONE_RPS);
 	}
 	/**
 	 * 
 	 * @param radps rotation speed in radians/second
 	 */
 	public void setRotationSpeed(double radps) {
-		rotationSpeed_ = radps;
 		pid_.setTarget(radps);
 	}
 	@Override

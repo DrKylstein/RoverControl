@@ -7,24 +7,23 @@ package com.example.rovercontrol;
  * @author kyle
  *
  */
-public class StateMachine {
-	private State _currentState;
-	private State _globalState;
+public class StateMachine<T> {
+	private State<T> _currentState;
+	private T _owner;
 	
-	public void changeState(State newState) {
-		if(_currentState != null) {
-			_currentState.onExit();
-		}
-		_currentState = newState;
-		_currentState.onEnter();
+	public StateMachine(T owner) {
+		_owner = owner;
 	}
 	
-	public void changeGlobalState(State newState) {
-		if(_globalState != null) {
-			_globalState.onExit();
+	public void changeState(State<T> newState) {
+		if(_currentState != null) {
+			_currentState.onExit(_owner);
 		}
-		_globalState = newState;
-		_globalState.onEnter();
+		_currentState = newState;
+		_currentState.onEnter(_owner);
+	}
+	public String getStateName() {
+		return _currentState.getName();
 	}
 	/**
 	 * Executes the current state code.
@@ -32,11 +31,8 @@ public class StateMachine {
 	 */
 	public void update(long dtNanos) {
 		System.out.println("rover_debug StateMachine.update");
-		if(_globalState != null) {
-			_globalState.update(dtNanos, this);
-		}
 		if(_currentState != null) {
-			_currentState.update(dtNanos, this);
+			_currentState.update(dtNanos, _owner);
 		}
 	}
 }

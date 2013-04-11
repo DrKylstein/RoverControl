@@ -7,19 +7,13 @@ package com.example.rovercontrol;
  * @author kyle
  *
  */
-public class DrunkTestState implements State {
-
-	private RobotMotion robotMotion_;
-	
-	DrunkTestState(RobotMotion motion) {
-		robotMotion_ = motion;
-	}
+public class DrunkTestState implements State<Robot> {
 	
 	/* (non-Javadoc)
 	 * @see com.example.rovercontrol.State#onEnter()
 	 */
 	@Override
-	public void onEnter() {
+	public void onEnter(Robot robot) {
 		// TODO Auto-generated method stub
 
 	}
@@ -28,7 +22,7 @@ public class DrunkTestState implements State {
 	 * @see com.example.rovercontrol.State#onExit()
 	 */
 	@Override
-	public void onExit() {
+	public void onExit(Robot robot) {
 		// TODO Auto-generated method stub
 
 	}
@@ -37,10 +31,10 @@ public class DrunkTestState implements State {
 	 * @see com.example.rovercontrol.State#update(long, com.example.rovercontrol.StateMachine)
 	 */
 	@Override
-	public void update(long dtNanos, StateMachine machine) {
+	public void update(long dtNanos, Robot robot) {
 		// TODO Auto-generated method stub
-		robotMotion_.setSpeed(0.5);
-		robotMotion_.setRotationSpeed(0.0);		
+		robot.motion.setSpeed(0.5);
+		robot.motion.setRotationSpeed(0.0);		
 		System.out.println("rover_debug drunktest_loop");
 	}
 

@@ -1,6 +1,5 @@
 package com.example.rovercontrol;
 import java.io.IOException;
-import java.io.OutputStream;
 
 import android.content.Context;
 import android.content.Intent;
@@ -11,40 +10,30 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import ioio.lib.api.DigitalOutput;
-import ioio.lib.api.Uart;
-//import ioio.lib.api.PwmOutput;
-//import ioio.lib.api.PulseInput;
-//import ioio.lib.api.AnalogInput;
 import ioio.lib.api.IOIO;
 import ioio.lib.api.exception.ConnectionLostException;
 import ioio.lib.util.BaseIOIOLooper;
 import ioio.lib.util.IOIOLooper;
 import android.os.Binder;
-//import java.net.*;
-//import java.io.*;
 
 public class RoverService extends IOIOService {
 	
-	private final int PISTON_PIN = 12;
-	private final int IR_PIN = 40;
+	//private final int PISTON_PIN = 12;
+	//private final int IR_PIN = 40;
+	private final int _TX_PIN = 14;
+	private DigitalOutput _led;
 	
-	private DigitalOutput led_;
-	private boolean ledOn = false;
+	//private GrabberPiston piston_;
+	//private IRSensor irSensor_;
 	
-	private GrabberPiston piston_;
-	private IRSensor irSensor_;
-
-	private long _lastNanoTime;
-	private StateMachine _stateMachine;
-	
-	//private MothershipConnection mothershipConnection = new MothershipConnection();
-	
-	private RobotMotion robotMotion_;
+	private Robot _robot;
+	private MotorDriver _motorDriver;
 	private final Context context = this;
-	//for testing only
-	/*private MotorDriver motorDriver_;
-	private Uart uart_;
-	private OutputStream out_;*/
+	
+	public RoverService() {
+		_motorDriver = new MotorDriver(_TX_PIN);
+		_robot = new Robot(new RobotMotion(_motorDriver, context));
+	}
 	
 	@Override
 	protected IOIOLooper createIOIOLooper() {
@@ -55,75 +44,28 @@ public class RoverService extends IOIOService {
 			protected void setup() throws ConnectionLostException,
 					InterruptedException {
 				System.out.println("rover_debug: IOIO setup begin");
-				led_ = ioio_.openDigitalOutput(IOIO.LED_PIN);
-				irSensor_ = new IRSensor(ioio_, IR_PIN);
-				piston_ = new GrabberPiston(ioio_, PISTON_PIN);
+				_led = ioio_.openDigitalOutput(IOIO.LED_PIN);
+				//irSensor_ = new IRSensor(ioio_, IR_PIN);
+				//piston_ = new GrabberPiston(ioio_, PISTON_PIN);
 				
 				try {
-					robotMotion_ = new RobotMotion(ioio_, context);
-					DrunkTestState _testState = new DrunkTestState(robotMotion_);
-					_stateMachine.changeState(_testState);
+					_motorDriver.reset(ioio_);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				
-				//testing
-				//uart_ = ioio_.openUart(IOIO.INVALID_PIN, 14, 9600, Uart.Parity.NONE, Uart.StopBits.ONE);
-				//out_ = uart_.getOutputStream();
-
-				/*
-				try {
-					motorDriver_ = new MotorDriver(ioio_, 14);
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					System.out.println("rover_debug: IOException in MotorDriver()");
-					e1.printStackTrace();
-				}*/
-				
-				
-				//_stateMachine.changeState(new RetrievePuckState(irSensor_, piston_));
-				
-				//robotMotion_.setSpeed(1);
-				
-				
-				_lastNanoTime = System.nanoTime();
 				System.out.println("rover_debug: IOIO setup end");
 			}
 
 			@Override
 			public void loop() throws ConnectionLostException,
-					InterruptedException {
-				//System.out.println("rover_debug: IOIO loop enter");
-				//if(!ledOn) {
-					led_.write(true);
-					//ledOn = true;
-				//}
-				/*try {
-					out_.write(170);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}*/
-
-				/*try {
-					motorDriver_.setSpeed(1.0);
-					motorDriver_.setRotationSpeed(0.0);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					System.out.println("rover_debug: IOException in MotorDriver.setSpeed");
-					e.printStackTrace();
-				}*/
-				//System.out.println("rover_debug: IOIO loop exit");
-				_stateMachine.update(System.nanoTime() - _lastNanoTime);
-				_lastNanoTime = System.nanoTime();
-				led_.write(false);
+				InterruptedException {
+				_led.write(true);
+				_robot.update();
+				_led.write(false);
 			}
 		};
-	}
-	
-	public String getCurrentState() {
-		return null;
 	}
 	
 	@Override
@@ -147,14 +89,6 @@ public class RoverService extends IOIOService {
 			notification.flags |= Notification.FLAG_ONGOING_EVENT;
 			nm.notify(0, notification);
 		}
-		//new Thread(mothershipConnection).start();
-		_stateMachine = new StateMachine();
-	}
-	
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
-		//mothershipConnection.stop();
 	}
 	
 	public class MyBinder extends Binder {
@@ -162,10 +96,15 @@ public class RoverService extends IOIOService {
 			return RoverService.this;
 		}
 	}
-	private final IBinder mBinder = new MyBinder();
+	private final IBinder _binder = new MyBinder();
 	@Override
 	public IBinder onBind(Intent arg0) {
-		return mBinder;
+		return _binder;
+	}
+
+	public String getCurrentState() {
+		// TODO Auto-generated method stub
+		return _robot.stateMachine.getStateName();
 	}
 
 }

@@ -12,6 +12,8 @@ public class MotorDriver {
 	private IOIO ioio;
 	private Uart uart;
 	private OutputStream out;
+	private boolean _ready;
+	private int _txPin;
 
 	/**
 	 * 
@@ -21,10 +23,15 @@ public class MotorDriver {
 	 * @throws ConnectionLostException
 	 * @throws IOException 
 	 */
-	public MotorDriver(IOIO ioioInstance, int txPin) throws ConnectionLostException, IOException
+	public MotorDriver(int txPin) {
+		_ready = false;
+		_txPin = txPin;
+	}
+	
+	public void reset(IOIO ioioInstance) throws ConnectionLostException, IOException
 	{
 		ioio = ioioInstance;
-		uart = ioio.openUart(IOIO.INVALID_PIN, txPin, 9600, Uart.Parity.NONE, Uart.StopBits.ONE);
+		uart = ioio.openUart(IOIO.INVALID_PIN, _txPin, 9600, Uart.Parity.NONE, Uart.StopBits.ONE);
 		out = uart.getOutputStream();
 		try {
 			Thread.sleep(2000);
@@ -32,20 +39,35 @@ public class MotorDriver {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		_ready = true;
 	}
 	
-	public void setSpeed(double speed) throws IOException
+	public boolean setSpeed(double speed)
 	{
+		if(!_ready) return false;
 		if(speed > 1) speed = 1;
 		if(speed < -1) speed = -1; 
-		sendPacket(speed, 1);
+		try {
+			sendPacket(speed, 1);
+		} catch (IOException e) {
+			_ready = false;
+			return false;
+		}
+		return true;
 	}
 	
-	public void setRotationSpeed(double rotationalSpeed) throws IOException
+	public boolean setRotationSpeed(double rotationalSpeed)
 	{
+		if(!_ready) return false;
 		if(rotationalSpeed > 1) rotationalSpeed = 1;
 		if(rotationalSpeed < -1) rotationalSpeed = -1;
-		sendPacket(rotationalSpeed, 0);
+		try {
+			sendPacket(rotationalSpeed, 0);
+		} catch (IOException e) {
+			_ready = false;
+			return false;
+		}
+		return true;
 	}
 	
 	private void sendPacket(double input, int command) throws IOException
