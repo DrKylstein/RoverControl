@@ -102,6 +102,9 @@ public class RoverService extends IOIOService {
 		RoverService getService() {
 			return RoverService.this;
 		}
+		Robot getRobot() {
+			return RoverService.this._robot;
+		}
 	}
 	private final IBinder _binder = new MyBinder();
 	@Override

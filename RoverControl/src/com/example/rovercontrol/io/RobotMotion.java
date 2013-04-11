@@ -25,8 +25,10 @@ public class RobotMotion implements SensorEventListener {
 	private Timer pidTimer_;
 	private final SensorManager sensorManager_;
     private final Sensor gyroscope_;
-	private double actualRotationSpeed_;
+	private double _actualRotationSpeed;
 	private double _speed;
+	private double _targetRotation;
+	private double _lastPIDResult;
 	
 	private final double P_GAIN_ = 0.06;
 	private final double I_GAIN_ = 0.0;
@@ -36,9 +38,10 @@ public class RobotMotion implements SensorEventListener {
 	private class PidTask_ extends TimerTask {
 		@Override
 		public void run() {
-			System.out.printf("rover_debug gyro: %f", actualRotationSpeed_);
+			System.out.printf("rover_debug gyro: %f", _actualRotationSpeed);
 			//driver_.setRotationSpeed(pid_.UpdatePID(rotationSpeed_ - actualRotationSpeed_));
-			driver_.setRotationSpeed(pid_.update(actualRotationSpeed_));
+			_lastPIDResult = pid_.update(_actualRotationSpeed);
+			driver_.setRotationSpeed(_lastPIDResult);
 			driver_.setSpeed(_speed);
 		}
 	}
@@ -54,18 +57,34 @@ public class RobotMotion implements SensorEventListener {
 	}
 	/**
 	 * 
-	 * @param mps speed in approximate meters/second
+	 * @param speed in proportion of maximum
 	 */
 	public void setSpeed(double speed) {
-		_speed = speed; //driver_.setSpeed(mps);//driver_.setSpeed((mps / WHEEL_CIRC) * ONE_RPS);
+		_speed = speed; //driver_.setSpeed(mps);//driver_.setSpeed((mps / WHEEL_CIRC) * ONE_RPS); //mps speed in approximate meters/second
 	}
 	/**
 	 * 
 	 * @param radps rotation speed in radians/second
 	 */
 	public void setRotationSpeed(double radps) {
-		pid_.setTarget(radps);
+		_targetRotation = radps;
+		pid_.setTarget(_targetRotation);
 	}
+	
+	public double getSpeed() {
+		return _speed;
+	}
+	
+	public double getTargetRotation() {
+		return _targetRotation;
+	}	
+	public double getActualRotation() {
+		return _actualRotationSpeed;
+	}
+	public double getLastPID() {
+		return _lastPIDResult;
+	}
+	
 	@Override
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
 		// TODO Auto-generated method stub
@@ -74,6 +93,6 @@ public class RobotMotion implements SensorEventListener {
 	@Override
 	public void onSensorChanged(SensorEvent event) {
 		// get rotation about negative y of the phone, which is positive z for the robot
-		actualRotationSpeed_ = event.values[1];// * -1;
+		_actualRotationSpeed = event.values[1];// * -1;
 	}
 }

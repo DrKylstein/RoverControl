@@ -18,34 +18,31 @@ import android.widget.SeekBar;
 
 public class MainActivity extends Activity {
 
-	private RoverService roverService_;
+	//private RoverService roverService_;
+	private Robot _robot;
 	private boolean serviceBound_;
 	
-	private TextView currentState_;
-	private SeekBar throttleBar_;
-	private SeekBar steeringBar_;
+	private TextView _currentState, _miscInfo;
 	
 	private Timer refreshInfo_;
+	
+	public void onRestartService(View view) {
+		stopService(new Intent(this, RoverService.class));
+		doUnbindService();
+		startService(new Intent(this, RoverService.class));
+		doBindService();
+	}
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
 		setContentView(R.layout.activity_main);
-		currentState_ = (TextView)findViewById(R.id.currentState);
-		throttleBar_ = (SeekBar)findViewById(R.id.throttleBar);
-		steeringBar_ = (SeekBar)findViewById(R.id.steeringBar);
+		_currentState = (TextView)findViewById(R.id.currentState);
+		_miscInfo  = (TextView)findViewById(R.id.miscInfo);
 		
 		startService(new Intent(this, RoverService.class));
 		doBindService();
-		
-		/*losePuck_.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                if(serviceBound_ && roverService_ != null) {
-                	roverService_.losePuck();
-                }
-            }
-        });*/
 	}
 	
 	@Override
@@ -77,8 +74,8 @@ public class MainActivity extends Activity {
 	        // interact with the service.  Because we have bound to a explicit
 	        // service that we know is running in our own process, we can
 	        // cast its IBinder to a concrete class and directly access it.
-	        roverService_ = ((RoverService.MyBinder)service).getService();
-
+	        //roverService_ = ((RoverService.MyBinder)service).getService();
+	        _robot = ((RoverService.MyBinder)service).getRobot();
 	        // Tell the user about this for our demo.
 	        Toast.makeText(MainActivity.this, "Connected to service.",
 	                Toast.LENGTH_SHORT).show();
@@ -89,7 +86,8 @@ public class MainActivity extends Activity {
 	        // unexpectedly disconnected -- that is, its process crashed.
 	        // Because it is running in our same process, we should never
 	        // see this happen.
-	        roverService_ = null;
+	        //roverService_ = null;
+			_robot = null;
 	        Toast.makeText(MainActivity.this, "Service disconnected.",
 	                Toast.LENGTH_SHORT).show();
 			
@@ -115,16 +113,14 @@ public class MainActivity extends Activity {
 	}
 	
 	private void updateInfo() {
-		if(serviceBound_ && roverService_ != null) {
+		if(serviceBound_ && _robot != null) {
 			//roverService_.setThrottle(normalized(throttleBar_));
 			//roverService_.setSteering(normalized(steeringBar_));
-			currentState_.setText(roverService_.getCurrentState());
+			_currentState.setText(_robot.stateMachine.getStateName());
+			_miscInfo.setText("Target: " + _robot.motion.getTargetRotation() + ", Actual: " 
+							+ _robot.motion.getActualRotation() + ", Correction: " + _robot.motion.getLastPID());
 		}
 
-	}
-	
-	private float normalized(SeekBar bar) {
-		return (bar.getProgress()/(bar.getMax()/2)) - 1;
 	}
 	
 	@Override
