@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.example.rovercontrol;
+package com.example.rovercontrol.io;
 
 import ioio.lib.api.IOIO;
 import ioio.lib.api.exception.ConnectionLostException;

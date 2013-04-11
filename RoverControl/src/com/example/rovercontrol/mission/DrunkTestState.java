@@ -1,7 +1,10 @@
 /**
  * 
  */
-package com.example.rovercontrol;
+package com.example.rovercontrol.mission;
+
+import com.example.rovercontrol.Robot;
+import com.example.rovercontrol.control.State;
 
 /**
  * @author kyle

@@ -1,6 +1,10 @@
 package com.example.rovercontrol;
 import java.io.IOException;
 
+import com.example.rovercontrol.io.MotorDriver;
+import com.example.rovercontrol.io.RobotMotion;
+import com.example.rovercontrol.mission.DrunkTestState;
+
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
@@ -30,9 +34,12 @@ public class RoverService extends IOIOService {
 	private MotorDriver _motorDriver;
 	private final Context context = this;
 	
-	public RoverService() {
+	@Override
+	public void onCreate() {
+		super.onCreate();
 		_motorDriver = new MotorDriver(_TX_PIN);
-		_robot = new Robot(new RobotMotion(_motorDriver, context));
+		_robot = new Robot(new RobotMotion(_motorDriver, this));
+		_robot.stateMachine.changeState(new DrunkTestState());
 	}
 	
 	@Override

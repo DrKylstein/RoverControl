@@ -1,5 +1,8 @@
 package com.example.rovercontrol;
 
+import com.example.rovercontrol.control.StateMachine;
+import com.example.rovercontrol.io.RobotMotion;
+
 public class Robot {
 	public RobotMotion motion;
 	public StateMachine<Robot> stateMachine;

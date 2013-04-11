@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.example.rovercontrol;
+package com.example.rovercontrol.control;
 
 /**
  * @author kyle

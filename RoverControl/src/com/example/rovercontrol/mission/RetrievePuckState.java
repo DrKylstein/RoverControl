@@ -1,7 +1,12 @@
 /**
  * 
  */
-package com.example.rovercontrol;
+package com.example.rovercontrol.mission;
+
+import com.example.rovercontrol.Robot;
+import com.example.rovercontrol.control.State;
+import com.example.rovercontrol.io.GrabberPiston;
+import com.example.rovercontrol.io.IRSensor;
 
 import ioio.lib.api.exception.ConnectionLostException;
 

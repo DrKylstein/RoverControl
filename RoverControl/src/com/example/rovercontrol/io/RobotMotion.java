@@ -1,10 +1,12 @@
 /**
  * 
  */
-package com.example.rovercontrol;
+package com.example.rovercontrol.io;
 
 import java.util.Timer;
 import java.util.TimerTask;
+
+import com.example.rovercontrol.control.PID;
 
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
