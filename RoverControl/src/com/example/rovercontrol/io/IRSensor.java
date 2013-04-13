@@ -12,28 +12,47 @@ import ioio.lib.api.exception.ConnectionLostException;
  * Represents analog range-finder attached to IOIO 
  */
 public class IRSensor {
-	public IRSensor(IOIO ioio, int pin) throws ConnectionLostException {
-		input_ = ioio.openAnalogInput(pin);
+	public IRSensor(int pin) {
+		_pin = pin;
+		_ready = false;
+	}
+	public void reset(IOIO ioio) {
+		try {
+			_input = ioio.openAnalogInput(_pin);
+			_ready = true;
+		} catch (ConnectionLostException e) {
+			_ready = false;
+		}
+		
 	}
 	/**
 	 * Gets raw analog value
 	 * @return read voltage / reference voltage as double (0.0 to 1.0)
-	 * @throws InterruptedException
-	 * @throws ConnectionLostException
 	 */
-	public double voltage() throws InterruptedException, ConnectionLostException {
-		return (1 / input_.read()) - 0.42;
+	public double voltage() {
+		if(_ready) {
+			try {
+				return (1 / _input.read()) - 0.42;
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (ConnectionLostException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return 0.0;
 	}
 	/**
 	 * Gets distance in centimeters, not tested!
 	 * Constants based on GPD120, need to add configuration to support others! 
 	 * @return double centimeters
-	 * @throws InterruptedException
-	 * @throws ConnectionLostException
 	 */
-	public double centimeters() throws InterruptedException, ConnectionLostException {
-		return (1 / input_.read()) - 0.42;
+	public double centimeters() {
+		return (1 / voltage()) - 0.42;
 	}
 	
-	private AnalogInput input_;
+	private AnalogInput _input;
+	private int _pin;
+	private boolean _ready;
 }

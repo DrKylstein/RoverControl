@@ -28,18 +28,24 @@ public class MotorDriver {
 		_txPin = txPin;
 	}
 	
-	public void reset(IOIO ioioInstance) throws ConnectionLostException, IOException
-	{
+	public void reset(IOIO ioioInstance) {
 		ioio = ioioInstance;
-		uart = ioio.openUart(IOIO.INVALID_PIN, _txPin, 9600, Uart.Parity.NONE, Uart.StopBits.ONE);
-		out = uart.getOutputStream();
 		try {
-			Thread.sleep(2000);
-		} catch (InterruptedException e) {
+			uart = ioio.openUart(IOIO.INVALID_PIN, _txPin, 9600, Uart.Parity.NONE, Uart.StopBits.ONE);
+			out = uart.getOutputStream();
+			try {
+				Thread.sleep(2000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			_ready = true;
+		} catch (ConnectionLostException e1) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			e1.printStackTrace();
+			_ready = false;
 		}
-		_ready = true;
+
 	}
 	
 	public boolean setSpeed(double speed)

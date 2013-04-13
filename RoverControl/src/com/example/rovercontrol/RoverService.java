@@ -22,10 +22,9 @@ import android.os.Binder;
 
 public class RoverService extends IOIOService {
 	
-	//private final int PISTON_PIN = 12;
-	//private final int IR_PIN = 40;
-	private final int _TX_PIN = 14;
 	private DigitalOutput _led;
+	
+	private final int _TX_PIN = 14;
 	
 	//private GrabberPiston piston_;
 	//private IRSensor irSensor_;
@@ -55,12 +54,8 @@ public class RoverService extends IOIOService {
 				//irSensor_ = new IRSensor(ioio_, IR_PIN);
 				//piston_ = new GrabberPiston(ioio_, PISTON_PIN);
 				
-				try {
-					_motorDriver.reset(ioio_);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				_motorDriver.reset(ioio_);
+				_robot.resetHardware(ioio_);
 				
 				System.out.println("rover_debug: IOIO setup end");
 			}
