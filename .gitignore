@@ -1,3 +1,6 @@
-gen/*
-bin/*
-libs/*
+RoverControl/gen/*
+RoverControl/bin/*
+RoverControl/libs/*
+RoverControl/lint.xml
+RoverControl/log.txt
+RoverControl/proguard-project.txt
