@@ -18,17 +18,18 @@ import android.content.Context;
  * @author kyle
  *
  */
-public class RobotMotion implements SensorEventListener {
+public class RobotMotion{
 	
 	private MotorDriver driver_;
 	private PID pid_;
 	private Timer pidTimer_;
-	private final SensorManager sensorManager_;
-    private final Sensor gyroscope_;
+	
 	private double _actualRotationSpeed;
 	private double _speed;
 	private double _targetRotation;
 	private double _lastPIDResult;
+	
+	private RobotOrientation orientation_;
 	
 	private final double P_GAIN_ = 0.06;
 	private final double I_GAIN_ = 0.0;
@@ -38,23 +39,24 @@ public class RobotMotion implements SensorEventListener {
 	private class PidTask_ extends TimerTask {
 		@Override
 		public void run() {
+			_actualRotationSpeed = orientation_.getOrientation()[2];
 			System.out.printf("rover_debug gyro: %f", _actualRotationSpeed);
 			//driver_.setRotationSpeed(pid_.UpdatePID(rotationSpeed_ - actualRotationSpeed_));
 			_lastPIDResult = pid_.update(_actualRotationSpeed);
 			driver_.setRotationSpeed(_lastPIDResult);
 			driver_.setSpeed(_speed);
 		}
+
 	}
 	
-	public RobotMotion(MotorDriver driver, Context context) {
+	public RobotMotion(MotorDriver driver, RobotOrientation orientation) {
 		driver_ = driver;
 		pid_ = new PID(P_GAIN_, I_GAIN_, D_GAIN_, _INTERVAL);
 		pidTimer_ = new Timer();
 		pidTimer_.scheduleAtFixedRate(new PidTask_(), 0, (long) (_INTERVAL*1000));
-		sensorManager_ = (SensorManager)context.getSystemService(Context.SENSOR_SERVICE);
-		gyroscope_ = sensorManager_.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-		sensorManager_.registerListener(this, gyroscope_, SensorManager.SENSOR_DELAY_FASTEST);
+		orientation_ = orientation;
 	}
+
 	/**
 	 * 
 	 * @param speed in proportion of maximum
@@ -85,14 +87,5 @@ public class RobotMotion implements SensorEventListener {
 		return _lastPIDResult;
 	}
 	
-	@Override
-	public void onAccuracyChanged(Sensor sensor, int accuracy) {
-		// TODO Auto-generated method stub
-		
-	}
-	@Override
-	public void onSensorChanged(SensorEvent event) {
-		// get rotation about negative y of the phone, which is positive z for the robot
-		_actualRotationSpeed = event.values[1];// * -1;
-	}
+
 }
