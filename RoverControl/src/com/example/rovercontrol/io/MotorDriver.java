@@ -48,6 +48,10 @@ public class MotorDriver {
 
 	}
 	
+	public boolean isAvailable() {
+		return _ready;
+	}
+	
 	public boolean setSpeed(double speed)
 	{
 		if(!_ready) return false;

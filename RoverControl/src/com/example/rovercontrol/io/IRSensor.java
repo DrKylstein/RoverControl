@@ -25,6 +25,9 @@ public class IRSensor {
 		}
 		
 	}
+	public boolean isAvailable() {
+		return _ready;
+	}
 	/**
 	 * Gets raw analog value
 	 * @return read voltage / reference voltage as double (0.0 to 1.0)

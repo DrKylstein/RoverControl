@@ -43,6 +43,7 @@ public class RoverService extends IOIOService {
 		_orientation = new RobotOrientation(this);
 		_robot = new Robot(new RobotMotion(_motorDriver, _orientation), _orientation);
 		_robot.stateMachine.changeState(new DrunkTestState());
+		_robot.start();
 	}
 	
 	@Override
@@ -68,7 +69,7 @@ public class RoverService extends IOIOService {
 			public void loop() throws ConnectionLostException,
 				InterruptedException {
 				_led.write(true);
-				_robot.update();
+				//_robot.update();
 				_led.write(false);
 			}
 		};

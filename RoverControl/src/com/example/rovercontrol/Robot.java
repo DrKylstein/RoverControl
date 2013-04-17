@@ -26,6 +26,7 @@ public class Robot {
 		motion = motion_;
 		stateMachine = new StateMachine<Robot>(this);
 		orientation = orientation_;
+		_looper = new _RobotLooper();
 	}
 	
 	public void resetHardware(IOIO ioio) {
@@ -37,4 +38,19 @@ public class Robot {
 		stateMachine.update(currentTime - _lastNanoTime);
 		_lastNanoTime = currentTime;
 	}
+	
+	public void start() {
+		new Thread(_looper).start();
+	}
+	
+	private class _RobotLooper implements Runnable {
+
+		@Override
+		public void run() {
+			while(true) {
+				update();
+			}
+		}
+	}
+	_RobotLooper _looper;
 }

@@ -20,43 +20,47 @@ import android.content.Context;
  */
 public class RobotMotion{
 	
-	private MotorDriver driver_;
-	private PID pid_;
-	private Timer pidTimer_;
+	private MotorDriver _driver;
+	private PID _pid;
+	private Timer _pidTimer;
 	
 	private double _actualRotationSpeed;
 	private double _speed;
 	private double _targetRotation;
 	private double _lastPIDResult;
 	
-	private RobotOrientation orientation_;
+	private RobotOrientation _orientation;
 	
-	private final double P_GAIN_ = 0.06;
-	private final double I_GAIN_ = 0.0;
-	private final double D_GAIN_ = 0.005;
+	private final double _P_GAIN = 0.06;
+	private final double _I_GAIN = 0.0;
+	private final double _D_GAIN = 0.005;
 	private final double _INTERVAL = 0.01;
 	
 	private class PidTask_ extends TimerTask {
 		@Override
 		public void run() {
-			_actualRotationSpeed = orientation_.getOrientation()[2];
+			_actualRotationSpeed = _orientation.getOrientation()[2];
 			System.out.printf("rover_debug gyro: %f", _actualRotationSpeed);
 			//driver_.setRotationSpeed(pid_.UpdatePID(rotationSpeed_ - actualRotationSpeed_));
-			_lastPIDResult = pid_.update(_actualRotationSpeed);
-			driver_.setRotationSpeed(_lastPIDResult);
-			driver_.setSpeed(_speed);
+			_lastPIDResult = _pid.update(_actualRotationSpeed);
+			_driver.setRotationSpeed(_lastPIDResult);
+			_driver.setSpeed(_speed);
 		}
 
 	}
 	
 	public RobotMotion(MotorDriver driver, RobotOrientation orientation) {
-		driver_ = driver;
-		pid_ = new PID(P_GAIN_, I_GAIN_, D_GAIN_, _INTERVAL);
-		pidTimer_ = new Timer();
-		pidTimer_.scheduleAtFixedRate(new PidTask_(), 0, (long) (_INTERVAL*1000));
-		orientation_ = orientation;
+		_driver = driver;
+		_pid = new PID(_P_GAIN, _I_GAIN, _D_GAIN, _INTERVAL);
+		_pidTimer = new Timer();
+		_pidTimer.scheduleAtFixedRate(new PidTask_(), 0, (long) (_INTERVAL*1000));
+		_orientation = orientation;
 	}
 
+	public boolean isAvailable() {
+		return _driver.isAvailable();
+	}
+	
 	/**
 	 * 
 	 * @param speed in proportion of maximum
@@ -70,7 +74,7 @@ public class RobotMotion{
 	 */
 	public void setRotationSpeed(double radps) {
 		_targetRotation = radps;
-		pid_.setTarget(_targetRotation);
+		_pid.setTarget(_targetRotation);
 	}
 	
 	public double getSpeed() {

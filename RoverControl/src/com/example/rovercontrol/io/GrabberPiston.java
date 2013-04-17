@@ -20,6 +20,11 @@ public class GrabberPiston {
 		_pin = pin;
 		_ready = false;
 	}
+	
+	public boolean isAvailable() {
+		return _ready;
+	}
+	
 	public boolean grab() {
 		if(_ready) {
 			try {
