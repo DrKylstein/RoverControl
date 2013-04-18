@@ -9,7 +9,7 @@ import java.net.*;
 // SetState
 // SendState
 
-class UDPClient { 
+public class UDPClient { 
 	
 	// States: Wait, Task, Finished, Enroute
 	
@@ -50,7 +50,7 @@ class UDPClient {
 		      System.out.println ("Sending data to " + sendData.length + " bytes to server.");
 		      
 		      
-		      DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, 4444); 
+		      DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, cPort); 
 		  
 		      clientSocket.send(sendPacket); 
 		  
