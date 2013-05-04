@@ -38,7 +38,6 @@ public class DrunkTestState implements State<Robot> {
 		// TODO Auto-generated method stub
 		robot.motion.setSpeed(0.5);
 		robot.motion.setRotationSpeed(0.0);		
-		System.out.println("rover_debug drunktest_loop");
 	}
 
 	/* (non-Javadoc)

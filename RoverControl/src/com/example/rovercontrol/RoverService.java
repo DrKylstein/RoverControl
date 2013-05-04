@@ -1,9 +1,9 @@
 package com.example.rovercontrol;
-import java.io.IOException;
 
 import com.example.rovercontrol.io.MotorDriver;
 import com.example.rovercontrol.io.RobotMotion;
 import com.example.rovercontrol.io.RobotOrientation;
+import com.example.rovercontrol.io.RobotVision;
 import com.example.rovercontrol.mission.DrunkTestState;
 
 import android.content.Context;
@@ -35,13 +35,15 @@ public class RoverService extends IOIOService {
 	private RobotOrientation _orientation;
 	
 	private final Context context = this;
-	
+
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		RobotVision vision = new RobotVision();
+		vision.load(this);
 		_motorDriver = new MotorDriver(_TX_PIN);
 		_orientation = new RobotOrientation(this);
-		_robot = new Robot(new RobotMotion(_motorDriver, _orientation), _orientation);
+		_robot = new Robot(new RobotMotion(_motorDriver, _orientation), _orientation, vision);
 		_robot.stateMachine.changeState(new DrunkTestState());
 		_robot.start();
 	}
@@ -54,15 +56,12 @@ public class RoverService extends IOIOService {
 			@Override
 			protected void setup() throws ConnectionLostException,
 					InterruptedException {
-				System.out.println("rover_debug: IOIO setup begin");
 				_led = ioio_.openDigitalOutput(IOIO.LED_PIN);
 				//irSensor_ = new IRSensor(ioio_, IR_PIN);
 				//piston_ = new GrabberPiston(ioio_, PISTON_PIN);
 				
 				_motorDriver.reset(ioio_);
 				_robot.resetHardware(ioio_);
-				
-				System.out.println("rover_debug: IOIO setup end");
 			}
 
 			@Override

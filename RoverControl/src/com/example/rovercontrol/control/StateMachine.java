@@ -31,7 +31,6 @@ public class StateMachine<T> {
 	 * @param dtNanos Time since last call in nanoseconds, used to adjust real-time calculations.
 	 */
 	public void update(long dtNanos) {
-		System.out.println("rover_debug StateMachine.update");
 		if(_currentState != null) {
 			_currentState.update(dtNanos, _owner);
 		}

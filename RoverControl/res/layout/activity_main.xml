@@ -14,8 +14,7 @@
 	    android:id="@+id/currentState"
 	    android:layout_width="wrap_content"
 	    android:layout_height="wrap_content"
-	    android:textSize="@dimen/StatusText" 
-	    android:text="He's dead, Jim."/>
+	    android:textSize="@dimen/StatusText" />
 
 	<TextView
 	    android:layout_width="wrap_content"
@@ -26,7 +25,17 @@
 	    android:id="@+id/miscInfo"
 	    android:layout_width="wrap_content"
 	    android:layout_height="wrap_content"
-	    android:text="No Connection"
+	    android:textSize="@dimen/StatusText" />
+
+	<TextView
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:text="Vision" />
+
+	<TextView
+	    android:id="@+id/visionInfo"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
 	    android:textSize="@dimen/StatusText" />
 
 	<LinearLayout
@@ -41,5 +50,10 @@
 	        android:onClick="onRestartService"
 	        android:text="Restart Service" />
 	</LinearLayout>
+
+	<ImageView
+	    android:id="@+id/cameraPreview"
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content" />
 	
 </LinearLayout>

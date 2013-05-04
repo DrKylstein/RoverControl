@@ -5,26 +5,38 @@ import android.os.IBinder;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.View;
 import android.widget.TextView;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import org.opencv.android.Utils;
+import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
+
 import android.content.ServiceConnection;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.widget.ImageView;
 import android.widget.Toast;
-import android.widget.Button;
-import android.widget.SeekBar;
+//import android.widget.Button;
+//import android.widget.SeekBar;
 
 public class MainActivity extends Activity {
 
+	private final int _refreshRate = 1000/15;
+	
 	//private RoverService roverService_;
 	private Robot _robot;
 	private boolean serviceBound_;
 	
 	private TextView _currentState, _miscInfo;
+	private ImageView _cameraPreview;
 	
 	private Timer refreshInfo_;
+	private TextView _visionInfo;
 	
 	public void onRestartService(View view) {
 		stopService(new Intent(this, RoverService.class));
@@ -40,6 +52,9 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_main);
 		_currentState = (TextView)findViewById(R.id.currentState);
 		_miscInfo  = (TextView)findViewById(R.id.miscInfo);
+		_visionInfo  = (TextView)findViewById(R.id.visionInfo);
+		_cameraPreview = (ImageView)findViewById(R.id.cameraPreview);
+		_cameraPreview.setAdjustViewBounds(true);
 		
 		startService(new Intent(this, RoverService.class));
 		doBindService();
@@ -58,7 +73,7 @@ public class MainActivity extends Activity {
 				  }
 			  });
 		  }
-	  }, 0, 500);
+	  }, 0, _refreshRate);
 	}
 	@Override
 	public void onPause() {
@@ -119,6 +134,21 @@ public class MainActivity extends Activity {
 			_currentState.setText(_robot.stateMachine.getStateName());
 			_miscInfo.setText("Target: " + _robot.motion.getTargetRotation() + ", Actual: " 
 							+ _robot.motion.getActualRotation() + ", Correction: " + _robot.motion.getLastPID());
+			if(_robot.vision.servicesAvailable()) {
+				if(_robot.vision.cameraAvailable()) {
+					Mat frame = _robot.vision.grabFrame();
+					Mat result = new Mat(frame.height(), frame.width(), frame.type());
+					Bitmap resultBitmap = Bitmap.createBitmap(result.width(), result.height(), Bitmap.Config.ARGB_8888 );
+					Imgproc.cvtColor(frame, result, Imgproc.COLOR_RGB2BGRA);
+					Utils.matToBitmap(result, resultBitmap, true);
+					_cameraPreview.setImageBitmap(resultBitmap);
+					_visionInfo.setText("OpenCV loaded, camera open");
+				} else {
+					_visionInfo.setText("OpenCV loaded, camera unavailable");
+				}
+			} else {
+				_visionInfo.setText("OpenCV unavailable");
+			}
 		}
 
 	}
