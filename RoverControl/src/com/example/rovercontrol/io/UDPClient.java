@@ -2,6 +2,8 @@ package com.example.rovercontrol.io;
 
 import java.io.*; 
 import java.net.*;
+
+import android.os.AsyncTask;
  
 
 
@@ -34,9 +36,20 @@ public class UDPClient {
 
     public void udpClientSendReceive() throws Exception 
     { 
+
+    	new sendReceiveWrap().execute();
+    	
+    } // END udpClientSendReceive
+     
+    
+class sendReceiveWrap extends AsyncTask<Void, Void, Void> {
+
+	@Override
+	protected Void doInBackground(Void... params) {
     	try
     	{
 		      DatagramSocket clientSocket = new DatagramSocket(); 
+		      
 		  
 		      InetAddress IPAddress = InetAddress.getByName(cServerHostName); 
 		      System.out.println ("Attemping to connect to " + IPAddress + ") via UDP port " + cPort + ".");
@@ -47,7 +60,7 @@ public class UDPClient {
 		      String sentence = outmessage;
 		      sendData = sentence.getBytes();         
 		
-		      System.out.println ("Sending data to " + sendData.length + " bytes to server.");
+		      System.out.println ("Sending data " + sendData.length + " bytes to server.");
 		      
 		      
 		      DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, cPort); 
@@ -93,9 +106,11 @@ public class UDPClient {
 		     System.err.println(ex);
 		 }
     	
-    	
-    } // END udpClientSendReceive
-     
+    	return null;
+	}
+	
+ }
+ 
     
 } // END CLASS UDPClient
 
