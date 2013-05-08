@@ -23,8 +23,9 @@ public class Robot {
 	
 	private long _lastNanoTime;
 	private final int PISTON_PIN = 12;
-	private final int IR_PIN = 40;	private final int UDP_PORT = 8888;
-	private final String HOST_NAME = "localhost";
+	private final int IR_PIN = 40;	
+	private final int UDP_PORT = 4444;
+	private final String HOST_NAME = "192.168.43.190";
 	
 	//private final int _TX_PIN = 14;
 
