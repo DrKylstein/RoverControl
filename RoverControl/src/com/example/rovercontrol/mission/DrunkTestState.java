@@ -12,13 +12,14 @@ import com.example.rovercontrol.control.State;
  */
 public class DrunkTestState implements State<Robot> {
 	
+	//private final long SECOND = 1000000000;
+	
 	/* (non-Javadoc)
 	 * @see com.example.rovercontrol.State#onEnter()
 	 */
 	@Override
 	public void onEnter(Robot robot) {
-		// TODO Auto-generated method stub
-
+		robot.vision.startCapture();
 	}
 
 	/* (non-Javadoc)
@@ -26,8 +27,7 @@ public class DrunkTestState implements State<Robot> {
 	 */
 	@Override
 	public void onExit(Robot robot) {
-		// TODO Auto-generated method stub
-
+		robot.vision.stopCapture();
 	}
 
 	/* (non-Javadoc)
@@ -35,9 +35,8 @@ public class DrunkTestState implements State<Robot> {
 	 */
 	@Override
 	public void update(long dtNanos, Robot robot) {
-		// TODO Auto-generated method stub
 		robot.motion.setSpeed(0.5);
-		robot.motion.setRotationSpeed(0.0);		
+		robot.motion.setRotationSpeed(0.0);
 	}
 
 	/* (non-Javadoc)

@@ -26,7 +26,7 @@ import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
-	private final int _refreshRate = 1000/15;
+	private final int _refreshRate = 1000/5;
 	
 	//private RoverService roverService_;
 	private Robot _robot;
@@ -136,13 +136,17 @@ public class MainActivity extends Activity {
 							+ _robot.motion.getActualRotation() + ", Correction: " + _robot.motion.getLastPID());
 			if(_robot.vision.servicesAvailable()) {
 				if(_robot.vision.cameraAvailable()) {
-					Mat frame = _robot.vision.grabFrame();
-					Mat result = new Mat(frame.height(), frame.width(), frame.type());
-					Bitmap resultBitmap = Bitmap.createBitmap(result.width(), result.height(), Bitmap.Config.ARGB_8888 );
-					Imgproc.cvtColor(frame, result, Imgproc.COLOR_RGB2BGRA);
-					Utils.matToBitmap(result, resultBitmap, true);
-					_cameraPreview.setImageBitmap(resultBitmap);
-					_visionInfo.setText("OpenCV loaded, camera open");
+					Mat frame = _robot.vision.getLastFrame();
+					if(frame != null) {
+						Mat result = new Mat(frame.height(), frame.width(), frame.type());
+						Bitmap resultBitmap = Bitmap.createBitmap(result.width(), result.height(), Bitmap.Config.ARGB_8888 );
+						Imgproc.cvtColor(frame, result, Imgproc.COLOR_RGB2BGRA);
+						Utils.matToBitmap(result, resultBitmap, true);
+						_cameraPreview.setImageBitmap(resultBitmap);
+						_visionInfo.setText("OpenCV loaded, camera open");
+					} else {
+						_visionInfo.setText("OpenCV loaded, camera open, no frames grabbed.");
+					}
 				} else {
 					_visionInfo.setText("OpenCV loaded, camera unavailable");
 				}

@@ -1,5 +1,8 @@
 package com.example.rovercontrol.io;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
@@ -12,9 +15,16 @@ import android.content.Context;
 
 public class RobotVision {
 	
+	private final int DEFAULT_FPS = 5;
 	private boolean _openCVGood;
 	private VideoCapture _videoCapture;
 	Mat _cameraMat;
+	Mat _rawMat;
+	Timer _timer;
+	
+	public RobotVision() {
+		_timer = new Timer();
+	}
 	
 	private class _LoaderCallback extends BaseLoaderCallback {
         public _LoaderCallback(Context AppContext) {
@@ -29,6 +39,7 @@ public class RobotVision {
                 	_openCVGood = true;
                 	_videoCapture = new VideoCapture(0);
                 	_cameraMat = new Mat(640, 360, CvType.CV_8UC4);
+                	_rawMat = new Mat(_cameraMat.width(), _cameraMat.height(), _cameraMat.type());
                 	break;
                 default:
                 	//System.out.printf("", status);
@@ -50,16 +61,39 @@ public class RobotVision {
 	}
 	
 	public boolean cameraAvailable() {
+		if(!_openCVGood) return false;
+		if(_videoCapture == null) return false;
 		return _videoCapture.isOpened();
 	}
 	
 	public Mat grabFrame() {
 		if(_videoCapture.grab()) {
-			Mat source = new Mat(_cameraMat.width(), _cameraMat.height(), _cameraMat.type());
-			_videoCapture.retrieve(source);
+			_videoCapture.retrieve(_rawMat);
 			
-			Core.flip(source.t(), _cameraMat, 1);
+			Core.flip(_rawMat.t(), _cameraMat, 1);
 		}
 		return _cameraMat;
+	}
+	public Mat getLastFrame() {
+		return _cameraMat;
+	}
+	
+	private TimerTask _captureTask = new TimerTask() {
+		@Override
+		public void run() {
+			if(servicesAvailable() && cameraAvailable()) {
+				grabFrame();
+			}
+		}
+	};
+	
+	public void startCapture() {
+		startCapture(DEFAULT_FPS);
+	}
+	public void startCapture(long fps) {
+		_timer.scheduleAtFixedRate(_captureTask, 0, 1000/fps);
+	}
+	public void stopCapture() {
+		_timer.cancel();
 	}
 }
