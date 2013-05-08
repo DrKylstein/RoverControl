@@ -26,6 +26,7 @@ public class RobotVision {
 		_timer = new Timer();
 	}
 	
+	//receives callback when OpenCV is either loaded or failed to load
 	private class _LoaderCallback extends BaseLoaderCallback {
         public _LoaderCallback(Context AppContext) {
 			super(AppContext);
@@ -50,22 +51,39 @@ public class RobotVision {
     }
 	private _LoaderCallback _loaderCallback;
     
+	/**
+	 * Initialize OpenCV.
+	 * @param context
+	 */
+	
 	public void load(Context context) {
 		_loaderCallback = new _LoaderCallback(context);
 		_openCVGood = false;
 		OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, context, _loaderCallback);
 	}
-	
+	/**
+	 * Used to determine if OpenCV is available. 
+	 * Always check before using any OpenCV classes.
+	 * @return Whether OpenCV is loaded or not.
+	 */
 	public boolean servicesAvailable() {
 		return _openCVGood;
 	}
-	
+	/**
+	 * Used to determine if the camera is available.
+	 * Must check before manually grabbing frames.
+	 * Recommended to check before reading automatically grabbed frames.
+	 * @return Whether the camera was successfully opened.
+	 */
 	public boolean cameraAvailable() {
 		if(!_openCVGood) return false;
 		if(_videoCapture == null) return false;
 		return _videoCapture.isOpened();
 	}
-	
+	/**
+	 * Manually grab frame from camera
+	 * @return OpenCv Matrix containing the image
+	 */
 	public Mat grabFrame() {
 		if(_videoCapture.grab()) {
 			_videoCapture.retrieve(_rawMat);
@@ -74,6 +92,10 @@ public class RobotVision {
 		}
 		return _cameraMat;
 	}
+	/**
+	 * Get the last frame fetched either by grabFrame() or startCapture()
+	 * @return OpenCv Matrix containing the image
+	 */
 	public Mat getLastFrame() {
 		return _cameraMat;
 	}
@@ -86,13 +108,22 @@ public class RobotVision {
 			}
 		}
 	};
-	
+	/**
+	 * Start automatically grabbing frames at the default rate
+	 */
 	public void startCapture() {
 		startCapture(DEFAULT_FPS);
 	}
+	/**
+	 * Start automatically grabbing frames at the specified rate.
+	 * @param fps frames per second (not guaranteed)
+	 */
 	public void startCapture(long fps) {
 		_timer.scheduleAtFixedRate(_captureTask, 0, 1000/fps);
 	}
+	/**
+	 * Stop automatically capturing frames
+	 */
 	public void stopCapture() {
 		_timer.cancel();
 	}
