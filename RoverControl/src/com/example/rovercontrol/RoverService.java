@@ -4,7 +4,8 @@ import com.example.rovercontrol.io.MotorDriver;
 import com.example.rovercontrol.io.RobotMotion;
 import com.example.rovercontrol.io.RobotOrientation;
 import com.example.rovercontrol.io.RobotVision;
-import com.example.rovercontrol.mission.DrunkTestState;
+import com.example.rovercontrol.mission.MotionTestState;
+import com.example.rovercontrol.mission.VisionTestState;
 
 import android.content.Context;
 import android.content.Intent;
@@ -44,7 +45,7 @@ public class RoverService extends IOIOService {
 		_motorDriver = new MotorDriver(_TX_PIN);
 		_orientation = new RobotOrientation(this);
 		_robot = new Robot(new RobotMotion(_motorDriver, _orientation), _orientation, vision);
-		_robot.stateMachine.changeState(new DrunkTestState());
+		_robot.stateMachine.changeState(new VisionTestState());
 		_robot.start();
 	}
 	

@@ -10,7 +10,7 @@ import com.example.rovercontrol.control.State;
  * @author kyle
  *
  */
-public class DrunkTestState implements State<Robot> {
+public class MotionTestState implements State<Robot> {
 	
 	//private final long SECOND = 1000000000;
 	
@@ -19,7 +19,7 @@ public class DrunkTestState implements State<Robot> {
 	 */
 	@Override
 	public void onEnter(Robot robot) {
-		robot.vision.startCapture();
+		
 	}
 
 	/* (non-Javadoc)
@@ -27,7 +27,7 @@ public class DrunkTestState implements State<Robot> {
 	 */
 	@Override
 	public void onExit(Robot robot) {
-		robot.vision.stopCapture();
+		
 	}
 
 	/* (non-Javadoc)

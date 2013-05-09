@@ -21,12 +21,12 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.widget.ImageView;
 import android.widget.Toast;
-//import android.widget.Button;
+import android.widget.ToggleButton;
 //import android.widget.SeekBar;
 
 public class MainActivity extends Activity {
 
-	private final int _refreshRate = 1000/5;
+	private final int _refreshRate = 500;
 	
 	//private RoverService roverService_;
 	private Robot _robot;
@@ -35,8 +35,13 @@ public class MainActivity extends Activity {
 	private TextView _currentState, _miscInfo;
 	private ImageView _cameraPreview;
 	
-	private Timer refreshInfo_;
+	private Timer _infoTimer;
+	private Timer _cameraTimer;
 	private TextView _visionInfo;
+
+	private final long _cameraRate = 1000/5;
+	
+	private final Context context = this;
 	
 	public void onRestartService(View view) {
 		stopService(new Intent(this, RoverService.class));
@@ -63,13 +68,26 @@ public class MainActivity extends Activity {
 	@Override
 	public void onResume() {
 	  super.onResume();
-	  refreshInfo_ = new Timer();
-	  refreshInfo_.schedule(new TimerTask() {
+	  _infoTimer = new Timer();
+	  _infoTimer.schedule(new TimerTask() {
 		  @Override
 		  public void run() {
 			  runOnUiThread(new Runnable() {
 				  public void run() {
-					  updateInfo();
+					if(serviceBound_ && _robot != null) {
+						_currentState.setText(_robot.stateMachine.getStateName());
+						_miscInfo.setText("Target: " + _robot.motion.getTargetRotation() + ", Actual: " 
+										+ _robot.motion.getActualRotation() + ", Correction: " + _robot.motion.getLastPID());
+						if(_robot.vision.servicesAvailable()) {
+							if(_robot.vision.cameraAvailable()) {
+									_visionInfo.setText("OpenCV loaded, camera open");
+							} else {
+								_visionInfo.setText("OpenCV loaded, camera unavailable");
+							}
+						} else {
+							_visionInfo.setText("OpenCV unavailable");
+						}
+					}
 				  }
 			  });
 		  }
@@ -77,8 +95,38 @@ public class MainActivity extends Activity {
 	}
 	@Override
 	public void onPause() {
-		refreshInfo_.cancel();
+		_infoTimer.cancel();
 		super.onPause();
+	}
+	
+	public void toggleCamera(View view) {
+		if(((ToggleButton)view).isChecked()) {
+			_cameraTimer = new Timer();
+			_cameraTimer.scheduleAtFixedRate(new TimerTask() {
+
+				@Override
+				public void run() {
+					if(serviceBound_ && _robot != null) {
+						if(_robot.vision.servicesAvailable() && _robot.vision.cameraAvailable()) {
+								((Activity)context).runOnUiThread(new Runnable() { 
+									public void run() {
+										Mat frame = _robot.vision.getLastFrame();
+										if(frame != null) {
+											Mat result = new Mat(frame.height(), frame.width(), frame.type());
+											Bitmap resultBitmap = Bitmap.createBitmap(result.width(), result.height(), Bitmap.Config.ARGB_8888 );
+											Imgproc.cvtColor(frame, result, Imgproc.COLOR_RGB2BGRA);
+											Utils.matToBitmap(result, resultBitmap, true);
+											_cameraPreview.setImageBitmap(resultBitmap);
+										}
+									}
+								});
+						}
+					}
+				}
+			}, 0, _cameraRate);
+		} else {
+			_cameraTimer.cancel();
+		}
 	}
 	
 	private ServiceConnection mConnection = new ServiceConnection() {
@@ -126,37 +174,7 @@ public class MainActivity extends Activity {
 	        serviceBound_ = false;
 	    }
 	}
-	
-	private void updateInfo() {
-		if(serviceBound_ && _robot != null) {
-			//roverService_.setThrottle(normalized(throttleBar_));
-			//roverService_.setSteering(normalized(steeringBar_));
-			_currentState.setText(_robot.stateMachine.getStateName());
-			_miscInfo.setText("Target: " + _robot.motion.getTargetRotation() + ", Actual: " 
-							+ _robot.motion.getActualRotation() + ", Correction: " + _robot.motion.getLastPID());
-			if(_robot.vision.servicesAvailable()) {
-				if(_robot.vision.cameraAvailable()) {
-					Mat frame = _robot.vision.getLastFrame();
-					if(frame != null) {
-						Mat result = new Mat(frame.height(), frame.width(), frame.type());
-						Bitmap resultBitmap = Bitmap.createBitmap(result.width(), result.height(), Bitmap.Config.ARGB_8888 );
-						Imgproc.cvtColor(frame, result, Imgproc.COLOR_RGB2BGRA);
-						Utils.matToBitmap(result, resultBitmap, true);
-						_cameraPreview.setImageBitmap(resultBitmap);
-						_visionInfo.setText("OpenCV loaded, camera open");
-					} else {
-						_visionInfo.setText("OpenCV loaded, camera open, no frames grabbed.");
-					}
-				} else {
-					_visionInfo.setText("OpenCV loaded, camera unavailable");
-				}
-			} else {
-				_visionInfo.setText("OpenCV unavailable");
-			}
-		}
-
-	}
-	
+		
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
