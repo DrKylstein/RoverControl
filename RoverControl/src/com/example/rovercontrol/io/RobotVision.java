@@ -10,21 +10,16 @@ import org.opencv.core.Mat;
 import org.opencv.highgui.VideoCapture;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
-
 import android.content.Context;
 
 public class RobotVision {
 	
-	private final int DEFAULT_FPS = 5;
+	private final int DEFAULT_FPS = 12;
 	private boolean _openCVGood;
 	private VideoCapture _videoCapture;
-	Mat _cameraMat;
-	Mat _rawMat;
-	Timer _timer;
-	
-	public RobotVision() {
-		_timer = new Timer();
-	}
+	public Mat currentFrame;
+	private Mat _rawMat;
+	private Timer _timer;
 	
 	//receives callback when OpenCV is either loaded or failed to load
 	private class _LoaderCallback extends BaseLoaderCallback {
@@ -39,8 +34,8 @@ public class RobotVision {
                 case LoaderCallbackInterface.SUCCESS:
                 	_openCVGood = true;
                 	_videoCapture = new VideoCapture(0);
-                	_cameraMat = new Mat(640, 360, CvType.CV_8UC4);
-                	_rawMat = new Mat(_cameraMat.width(), _cameraMat.height(), _cameraMat.type());
+                	currentFrame = new Mat(640, 360, CvType.CV_8UC4);
+                	_rawMat = new Mat(currentFrame.width(), currentFrame.height(), currentFrame.type());
                 	break;
                 default:
                 	//System.out.printf("", status);
@@ -84,21 +79,21 @@ public class RobotVision {
 	 * Manually grab frame from camera
 	 * @return OpenCv Matrix containing the image
 	 */
-	public Mat grabFrame() {
+	public void grabFrame() {
 		if(_videoCapture.grab()) {
 			_videoCapture.retrieve(_rawMat);
-			
-			Core.flip(_rawMat.t(), _cameraMat, 1);
+		
+			Core.flip(_rawMat.t(), currentFrame, 1);
 		}
-		return _cameraMat;
+		//return currentFrame;
 	}
 	/**
 	 * Get the last frame fetched either by grabFrame() or startCapture()
 	 * @return OpenCv Matrix containing the image
 	 */
-	public Mat getLastFrame() {
-		return _cameraMat;
-	}
+	/*public Mat getLastFrame() {
+		return currentFrame;
+	}*/
 	
 	private TimerTask _captureTask = new TimerTask() {
 		@Override
@@ -119,12 +114,24 @@ public class RobotVision {
 	 * @param fps frames per second (not guaranteed)
 	 */
 	public void startCapture(long fps) {
+		_timer = new Timer();
 		_timer.scheduleAtFixedRate(_captureTask, 0, 1000/fps);
 	}
 	/**
 	 * Stop automatically capturing frames
 	 */
 	public void stopCapture() {
-		_timer.cancel();
+		if(_timer != null) {
+			_timer.cancel();
+		}
+	}
+	/**
+	 * Call when service exits or the camera may be left on
+	 */
+	public void unload() {
+		stopCapture();
+		if(_openCVGood) {
+			_videoCapture.release();
+		}
 	}
 }

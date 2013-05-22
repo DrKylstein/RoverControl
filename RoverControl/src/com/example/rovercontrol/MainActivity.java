@@ -39,7 +39,7 @@ public class MainActivity extends Activity {
 	private Timer _cameraTimer;
 	private TextView _visionInfo;
 
-	private final long _cameraRate = 1000/5;
+	private final long _cameraRate = 1000/12;
 	
 	private final Context context = this;
 	
@@ -95,7 +95,9 @@ public class MainActivity extends Activity {
 	}
 	@Override
 	public void onPause() {
-		_infoTimer.cancel();
+		if(_infoTimer != null) {
+			_infoTimer.cancel();
+		}
 		super.onPause();
 	}
 	
@@ -109,23 +111,29 @@ public class MainActivity extends Activity {
 					if(serviceBound_ && _robot != null) {
 						if(_robot.vision.servicesAvailable() && _robot.vision.cameraAvailable()) {
 								((Activity)context).runOnUiThread(new Runnable() { 
-									public void run() {
-										Mat frame = _robot.vision.getLastFrame();
-										if(frame != null) {
-											Mat result = new Mat(frame.height(), frame.width(), frame.type());
-											Bitmap resultBitmap = Bitmap.createBitmap(result.width(), result.height(), Bitmap.Config.ARGB_8888 );
-											Imgproc.cvtColor(frame, result, Imgproc.COLOR_RGB2BGRA);
-											Utils.matToBitmap(result, resultBitmap, true);
-											_cameraPreview.setImageBitmap(resultBitmap);
-										}
-									}
+									public void run() {updatePreview();}
 								});
 						}
 					}
 				}
 			}, 0, _cameraRate);
 		} else {
-			_cameraTimer.cancel();
+			if(_cameraTimer != null) {
+				_cameraTimer.cancel();
+			}
+		}
+	}
+	
+	private void updatePreview() {
+		if(_robot.vision.currentFrame != null) {
+			Mat frame = _robot.vision.currentFrame.clone();
+			if(frame != null && frame.width() > 0 && frame.height() > 0) {
+				//Mat result = new Mat(frame.height(), frame.width(), frame.type());
+				Bitmap resultBitmap = Bitmap.createBitmap(frame.width(), frame.height(), Bitmap.Config.ARGB_8888 );
+				//Imgproc.cvtColor(frame, result, Imgproc.COLOR_RGB2BGRA);
+				Utils.matToBitmap(frame, resultBitmap, true);
+				_cameraPreview.setImageBitmap(resultBitmap);
+			}
 		}
 	}
 	

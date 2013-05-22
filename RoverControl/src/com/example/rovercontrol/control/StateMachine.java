@@ -21,7 +21,9 @@ public class StateMachine<T> {
 			_currentState.onExit(_owner);
 		}
 		_currentState = newState;
-		_currentState.onEnter(_owner);
+		if(_currentState != null) {
+			_currentState.onEnter(_owner);
+		}
 	}
 	public String getStateName() {
 		return _currentState.getName();

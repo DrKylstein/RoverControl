@@ -28,14 +28,11 @@ public class RoverService extends IOIOService {
 	
 	private final int _TX_PIN = 14;
 	
-	//private GrabberPiston piston_;
-	//private IRSensor irSensor_;
-	
 	private Robot _robot;
 	private MotorDriver _motorDriver;
 	private RobotOrientation _orientation;
 	
-	private final Context context = this;
+	//private final Context context = this;
 
 	@Override
 	public void onCreate() {
@@ -47,6 +44,12 @@ public class RoverService extends IOIOService {
 		_robot = new Robot(new RobotMotion(_motorDriver, _orientation), _orientation, vision);
 		_robot.stateMachine.changeState(new VisionTestState());
 		_robot.start();
+	}
+	
+	@Override
+	public void onDestroy() {
+		_robot.stateMachine.changeState(null);
+		_robot.vision.unload();
 	}
 	
 	@Override
