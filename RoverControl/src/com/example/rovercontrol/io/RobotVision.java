@@ -1,8 +1,5 @@
 package com.example.rovercontrol.io;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
@@ -14,13 +11,12 @@ import android.content.Context;
 
 public class RobotVision {
 	
-	private final int DEFAULT_FPS = 12;
 	private boolean _openCVGood;
 	private VideoCapture _videoCapture;
-	private Mat _cameraFrame;
-	private Mat _rawMat;
-	private volatile Mat _publishedFrame;
-	private Timer _timer;
+	private Mat _rawMat; //holds initial results of video capture
+	private Mat _cameraFrame; //holds video capture after pre-processing
+	private volatile Mat _publishedFrame; //holds image result from ai
+	
 	
 	//receives callback when OpenCV is either loaded or failed to load
 	private class _LoaderCallback extends BaseLoaderCallback {
@@ -51,7 +47,6 @@ public class RobotVision {
 	 * Initialize OpenCV.
 	 * @param context
 	 */
-	
 	public void load(Context context) {
 		_loaderCallback = new _LoaderCallback(context);
 		_openCVGood = false;
@@ -67,18 +62,18 @@ public class RobotVision {
 	}
 	/**
 	 * Used to determine if the camera is available.
-	 * Must check before manually grabbing frames.
-	 * Recommended to check before reading automatically grabbed frames.
+	 * Must check before grabbing frames.
+	 * Remember to check servicesAvailable first!
 	 * @return Whether the camera was successfully opened.
 	 */
 	public boolean cameraAvailable() {
-		if(!_openCVGood) return false;
+		//if(!_openCVGood) return false;
 		if(_videoCapture == null) return false;
 		return _videoCapture.isOpened();
 	}
 	/**
 	 * Manually grab frame from camera
-	 * @return OpenCv Matrix containing the image
+	 * @return OpenCv Matrix containing copy of the image
 	 */
 	public Mat grabFrame() {
 		if(_videoCapture.grab()) {
@@ -91,12 +86,19 @@ public class RobotVision {
 		return null;
 		//return currentFrame;
 	}
-	
+	/**
+	 * make a processed frame available to viewers
+	 * @param newMat the frame, which is taken as reference. Do not attempt to access it again directly.
+	 */
 	public void publishFrame(Mat newMat) {
-		//synchronized(_previewMat) {
+		//synchronized(_previewMat) { //switched to volatile, I don't think null supports locks!
 			_publishedFrame = newMat;
 		//}
 	}
+	/**
+	 * Get a copy of the last published frame
+	 * @return
+	 */
 	public Mat getPublishedFrame() {
 		if(_publishedFrame != null) {
 			synchronized(_publishedFrame) {
@@ -104,60 +106,11 @@ public class RobotVision {
 			}
 		}
 		return null;
-	}
-	
-	/**
-	 * Get the last frame fetched either by grabFrame() or startCapture()
-	 * @return OpenCv Matrix containing the image
-	 */
-	/*public Mat getLastFrame() {
-		return currentFrame;
-	}*/
-	
-	public Mat getFrameCopy() {
-		synchronized(_cameraFrame) {
-			if(_cameraFrame != null) {
-				return _cameraFrame.clone();
-			}
-		}
-		return null;
-	}
-	
-	private TimerTask _captureTask = new TimerTask() {
-		@Override
-		public void run() {
-			if(servicesAvailable() && cameraAvailable()) {
-				grabFrame();
-			}
-		}
-	};
-	/**
-	 * Start automatically grabbing frames at the default rate
-	 */
-	public void startCapture() {
-		startCapture(DEFAULT_FPS);
-	}
-	/**
-	 * Start automatically grabbing frames at the specified rate.
-	 * @param fps frames per second (not guaranteed)
-	 */
-	public void startCapture(long fps) {
-		_timer = new Timer();
-		_timer.scheduleAtFixedRate(_captureTask, 0, 1000/fps);
-	}
-	/**
-	 * Stop automatically capturing frames
-	 */
-	public void stopCapture() {
-		if(_timer != null) {
-			_timer.cancel();
-		}
-	}
+	}	
 	/**
 	 * Call when service exits or the camera may be left on
 	 */
 	public void unload() {
-		stopCapture();
 		if(_openCVGood) {
 			_videoCapture.release();
 		}
