@@ -17,8 +17,9 @@ public class RobotVision {
 	private final int DEFAULT_FPS = 12;
 	private boolean _openCVGood;
 	private VideoCapture _videoCapture;
-	public Mat currentFrame;
+	private Mat _cameraFrame;
 	private Mat _rawMat;
+	private volatile Mat _publishedFrame;
 	private Timer _timer;
 	
 	//receives callback when OpenCV is either loaded or failed to load
@@ -34,8 +35,8 @@ public class RobotVision {
                 case LoaderCallbackInterface.SUCCESS:
                 	_openCVGood = true;
                 	_videoCapture = new VideoCapture(0);
-                	currentFrame = new Mat(640, 360, CvType.CV_8UC4);
-                	_rawMat = new Mat(currentFrame.width(), currentFrame.height(), currentFrame.type());
+                	_cameraFrame = new Mat(640, 360, CvType.CV_8UC4);
+                	_rawMat = new Mat(_cameraFrame.width(), _cameraFrame.height(), _cameraFrame.type());
                 	break;
                 default:
                 	//System.out.printf("", status);
@@ -79,14 +80,32 @@ public class RobotVision {
 	 * Manually grab frame from camera
 	 * @return OpenCv Matrix containing the image
 	 */
-	public void grabFrame() {
+	public Mat grabFrame() {
 		if(_videoCapture.grab()) {
 			_videoCapture.retrieve(_rawMat);
-		
-			Core.flip(_rawMat.t(), currentFrame, 1);
+			synchronized(_cameraFrame) {
+				Core.flip(_rawMat.t(), _cameraFrame, 1);
+				return _cameraFrame.clone();
+			}
 		}
+		return null;
 		//return currentFrame;
 	}
+	
+	public void publishFrame(Mat newMat) {
+		//synchronized(_previewMat) {
+			_publishedFrame = newMat;
+		//}
+	}
+	public Mat getPublishedFrame() {
+		if(_publishedFrame != null) {
+			synchronized(_publishedFrame) {
+				return _publishedFrame.clone();
+			}
+		}
+		return null;
+	}
+	
 	/**
 	 * Get the last frame fetched either by grabFrame() or startCapture()
 	 * @return OpenCv Matrix containing the image
@@ -94,6 +113,15 @@ public class RobotVision {
 	/*public Mat getLastFrame() {
 		return currentFrame;
 	}*/
+	
+	public Mat getFrameCopy() {
+		synchronized(_cameraFrame) {
+			if(_cameraFrame != null) {
+				return _cameraFrame.clone();
+			}
+		}
+		return null;
+	}
 	
 	private TimerTask _captureTask = new TimerTask() {
 		@Override

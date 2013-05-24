@@ -43,6 +43,8 @@ public class MainActivity extends Activity {
 	
 	private final Context context = this;
 	
+	private Mat _previewMat;
+	
 	public void onRestartService(View view) {
 		stopService(new Intent(this, RoverService.class));
 		doUnbindService();
@@ -110,9 +112,7 @@ public class MainActivity extends Activity {
 				public void run() {
 					if(serviceBound_ && _robot != null) {
 						if(_robot.vision.servicesAvailable() && _robot.vision.cameraAvailable()) {
-								((Activity)context).runOnUiThread(new Runnable() { 
-									public void run() {updatePreview();}
-								});
+							_updatePreview();
 						}
 					}
 				}
@@ -124,15 +124,19 @@ public class MainActivity extends Activity {
 		}
 	}
 	
-	private void updatePreview() {
-		if(_robot.vision.currentFrame != null) {
-			Mat frame = _robot.vision.currentFrame.clone();
-			if(frame != null && frame.width() > 0 && frame.height() > 0) {
-				//Mat result = new Mat(frame.height(), frame.width(), frame.type());
-				Bitmap resultBitmap = Bitmap.createBitmap(frame.width(), frame.height(), Bitmap.Config.ARGB_8888 );
-				//Imgproc.cvtColor(frame, result, Imgproc.COLOR_RGB2BGRA);
-				Utils.matToBitmap(frame, resultBitmap, true);
-				_cameraPreview.setImageBitmap(resultBitmap);
+	private void _updatePreview() {
+		if(_robot.vision.servicesAvailable() && _robot.vision.cameraAvailable()) {
+			_previewMat = _robot.vision.getPublishedFrame();
+			if(_previewMat != null && _previewMat.width() > 0 && _previewMat.height() > 0) {
+				((Activity)context).runOnUiThread(new Runnable() { 
+					public void run() {
+						//Mat result = new Mat(frame.height(), frame.width(), frame.type());
+						Bitmap resultBitmap = Bitmap.createBitmap(_previewMat.width(), _previewMat.height(), Bitmap.Config.ARGB_8888 );
+						//Imgproc.cvtColor(frame, result, Imgproc.COLOR_RGB2BGRA);
+						Utils.matToBitmap(_previewMat, resultBitmap, true);
+						_cameraPreview.setImageBitmap(resultBitmap);
+					}
+				});
 			}
 		}
 	}
