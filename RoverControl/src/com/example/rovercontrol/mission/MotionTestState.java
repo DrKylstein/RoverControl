@@ -45,7 +45,7 @@ public class MotionTestState implements State<Robot> {
 	@Override
 	public String getName() {
 		// TODO Auto-generated method stub
-		return "Sir, have you been drinking?";
+		return "Trying to walk straight. (Motion Test)";
 	}
 
 }

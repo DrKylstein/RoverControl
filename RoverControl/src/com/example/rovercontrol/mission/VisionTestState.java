@@ -31,12 +31,14 @@ public class VisionTestState implements State<Robot> {
 		Mat frame = robot.vision.grabFrame();
 		
 		Imgproc.cvtColor(frame, frame, Imgproc.COLOR_BGR2GRAY);
-		Imgproc.GaussianBlur(frame, frame, new Size(7,7), 1.5, 1.5);
+		Imgproc.GaussianBlur(frame, frame, new Size(11,11), 5, 5);
+		//Imgproc.threshold(frame, frame, 128, 255, Imgproc.THRESH_BINARY);
 		
 		Mat circles = new Mat();
 		
 		Imgproc.HoughCircles(frame, circles, Imgproc.CV_HOUGH_GRADIENT, 1.0, 
-				frame.rows()/8, 120,30,10,70);
+				frame.rows()/8, 200,28,10,150); //18 => 28
+		Imgproc.cvtColor(frame, frame, Imgproc.COLOR_GRAY2BGR);
 		if(circles.cols() > 0) {
 			for(int i = 0; i < circles.cols(); i++) {
 				double circle[] = circles.get(0,i);
@@ -54,7 +56,7 @@ public class VisionTestState implements State<Robot> {
 
 	@Override
 	public String getName() {
-		return "Vision Test";
+		return "Seeing spots! (Vision Test)";
 	}
 
 }

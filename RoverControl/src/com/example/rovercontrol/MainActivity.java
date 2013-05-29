@@ -78,8 +78,8 @@ public class MainActivity extends Activity {
 				  public void run() {
 					if(serviceBound_ && _robot != null) {
 						_currentState.setText(_robot.stateMachine.getStateName());
-						_miscInfo.setText("Target: " + _robot.motion.getTargetRotation() + ", Actual: " 
-										+ _robot.motion.getActualRotation() + ", Correction: " + _robot.motion.getLastPID());
+						_miscInfo.setText(String.format("ROTATION Target: %.4f Actual: %.4f Correction %.4f COMPASS %.2f", 
+								_robot.motion.getTargetRotation(), _robot.motion.getActualRotation(), _robot.motion.getLastPID(), _robot.orientation.getCompass()));
 						if(_robot.vision.servicesAvailable()) {
 							if(_robot.vision.cameraAvailable()) {
 									_visionInfo.setText("OpenCV loaded, camera open");

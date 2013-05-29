@@ -40,8 +40,6 @@ public class RobotMotion{
 		@Override
 		public void run() {
 			_actualRotationSpeed = _orientation.getOrientation()[2];
-			System.out.printf("rover_debug gyro: %f", _actualRotationSpeed);
-			//driver_.setRotationSpeed(pid_.UpdatePID(rotationSpeed_ - actualRotationSpeed_));
 			_lastPIDResult = _pid.update(_actualRotationSpeed);
 			_driver.setRotationSpeed(_lastPIDResult);
 			_driver.setSpeed(_speed);
