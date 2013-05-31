@@ -1,6 +1,5 @@
 gen/*
 bin/*
-libs/*
 lint.xml
 log.txt
 proguard-project.txt

@@ -9,6 +9,7 @@ import android.hardware.SensorManager;
 
 public class RobotOrientation implements SensorEventListener {
 
+	@SuppressWarnings("unused")
 	private float mMagneticInclination;
 
 	private SensorManager mSensMan;
@@ -19,7 +20,7 @@ public class RobotOrientation implements SensorEventListener {
 
 	private float[] mRotationM = new float[9];
 	private float[] mRemapedRotationM = new float[9];
-	private boolean mFailed;
+	//private boolean mFailed;
 
 
 	private static final float NS2S = 1.0f / 1000000000.0f;
@@ -30,16 +31,19 @@ public class RobotOrientation implements SensorEventListener {
 	private float[] mOrientationC = new float[3];
 	private float[] mOrientationG = new float[3];
 
-
-	public RobotOrientation(Context c){
-
-		timestamp = 0;
-
+	
+	public void register(Context c) {
 		//sets up the sensor manager
 		mSensMan = (SensorManager) c.getSystemService(Context.SENSOR_SERVICE);
 		mSensMan.registerListener(this, mSensMan.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), SensorManager.SENSOR_DELAY_UI);
 		mSensMan.registerListener(this, mSensMan.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_UI);
 		mSensMan.registerListener(this,mSensMan.getDefaultSensor(Sensor.TYPE_GYROSCOPE), SensorManager.SENSOR_DELAY_UI);
+		
+	}
+	
+	public RobotOrientation(){
+		timestamp = 0;
+		mMagneticInclination = 0;
 	}
 
 

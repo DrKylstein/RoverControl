@@ -1,18 +1,9 @@
 package com.example.rovercontrol;
 
-import com.example.rovercontrol.io.MotorDriver;
-import com.example.rovercontrol.io.RobotMotion;
-import com.example.rovercontrol.io.RobotOrientation;
-import com.example.rovercontrol.io.RobotVision;
-import com.example.rovercontrol.mission.MotionTestState;
 import com.example.rovercontrol.mission.VisionTestState;
-
-import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import ioio.lib.util.android.IOIOService;
-
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import ioio.lib.api.DigitalOutput;
@@ -21,35 +12,30 @@ import ioio.lib.api.exception.ConnectionLostException;
 import ioio.lib.util.BaseIOIOLooper;
 import ioio.lib.util.IOIOLooper;
 import android.os.Binder;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.TaskStackBuilder;
 
 public class RoverService extends IOIOService {
 	
 	private DigitalOutput _led;
-	
-	private final int _TX_PIN = 14;
-	
 	private Robot _robot;
-	private MotorDriver _motorDriver;
-	private RobotOrientation _orientation;
-	
-	//private final Context context = this;
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		RobotVision vision = new RobotVision();
-		vision.load(this);
-		_motorDriver = new MotorDriver(_TX_PIN);
-		_orientation = new RobotOrientation(this);
-		_robot = new Robot(new RobotMotion(_motorDriver, _orientation), _orientation, vision);
+		_robot = new Robot();
+		_robot.vision.load(this);
+		_robot.orientation.register(this);
 		_robot.stateMachine.changeState(new VisionTestState());
 		_robot.start();
 	}
 	
 	@Override
 	public void onDestroy() {
-		_robot.stateMachine.changeState(null);
+		_robot.stop();
 		_robot.vision.unload();
+		((NotificationManager) getSystemService(NOTIFICATION_SERVICE)).cancelAll();
+		super.onDestroy();
 	}
 	
 	@Override
@@ -61,11 +47,9 @@ public class RoverService extends IOIOService {
 			protected void setup() throws ConnectionLostException,
 					InterruptedException {
 				_led = ioio_.openDigitalOutput(IOIO.LED_PIN);
-				//irSensor_ = new IRSensor(ioio_, IR_PIN);
-				//piston_ = new GrabberPiston(ioio_, PISTON_PIN);
 				
-				_motorDriver.reset(ioio_);
-				_robot.resetHardware(ioio_);
+				_robot.motion.driver.reset(ioio_);
+				_robot.irSensor.reset(ioio_);
 			}
 
 			@Override
@@ -81,6 +65,9 @@ public class RoverService extends IOIOService {
 	@Override
 	public void onStart(Intent intent, int startId) {
 		super.onStart(intent, startId);
+		if(intent != null && intent.getAction() != null && intent.getAction().contentEquals("stop")) {
+			stopSelf();
+		}
 		NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		if (intent != null && intent.getAction() != null
 				&& intent.getAction().equals("stop")) {
@@ -89,15 +76,30 @@ public class RoverService extends IOIOService {
 			stopSelf();
 		} else {
 			// Service starting. Create a notification.
-			Notification notification = new Notification(
-					R.drawable.ic_launcher, "Rover service running",
-					System.currentTimeMillis());
-			notification
-					.setLatestEventInfo(this, "Rover Service", "Click to stop",
-							PendingIntent.getService(this, 0, new Intent(
-									"stop", null, this, this.getClass()), 0));
-			notification.flags |= Notification.FLAG_ONGOING_EVENT;
-			nm.notify(0, notification);
+			Intent resultIntent = new Intent(this, MainActivity.class);
+			// The stack builder object will contain an artificial back stack for the
+			// started Activity.
+			// This ensures that navigating backward from the Activity leads out of
+			// your application to the Home screen.
+			TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+			// Adds the back stack for the Intent (but not the Intent itself)
+			stackBuilder.addParentStack(MainActivity.class);
+			// Adds the Intent that starts the Activity to the top of the stack
+			stackBuilder.addNextIntent(resultIntent);
+			PendingIntent resultPendingIntent =
+			        stackBuilder.getPendingIntent(
+			            0,
+			            PendingIntent.FLAG_UPDATE_CURRENT
+			        );
+			NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
+				.setContentTitle("Rover Service")
+				//.setContentText("Click to stop")
+				.setSmallIcon(R.drawable.ic_launcher)
+				//.setContentIntent(PendingIntent.getService(this, 0, new Intent("stop", null, this, this.getClass()), 0))
+				.setContentIntent(resultPendingIntent)
+				.setOngoing(true)
+				.setTicker("Rover service running");
+			nm.notify(0, builder.build());
 		}
 	}
 	

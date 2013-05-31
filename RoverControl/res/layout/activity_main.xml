@@ -44,8 +44,8 @@
 	        android:id="@+id/restartService"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
-	        android:onClick="onRestartService"
-	        android:text="Restart Service" />
+	        android:onClick="onShutdown"
+	        android:text="Shutdown" />
 	</LinearLayout>
 
 	<LinearLayout

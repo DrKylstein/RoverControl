@@ -1,16 +1,13 @@
 package com.example.rovercontrol;
 
-import ioio.lib.api.IOIO;
-
 import com.example.rovercontrol.control.StateMachine;
 import com.example.rovercontrol.io.GrabberPiston;
 import com.example.rovercontrol.io.IRSensor;
+import com.example.rovercontrol.io.MotorDriver;
 import com.example.rovercontrol.io.RobotMotion;
 import com.example.rovercontrol.io.RobotOrientation;
 import com.example.rovercontrol.io.RobotVision;
 import com.example.rovercontrol.io.UDPClient;
-import org.opencv.core.Mat;
-import org.opencv.highgui.VideoCapture;
 
 public class Robot {
 	public RobotMotion motion;
@@ -24,25 +21,20 @@ public class Robot {
 	private long _lastNanoTime;
 	private final int PISTON_PIN = 12;
 	private final int IR_PIN = 40;	
+	private final int _TX_PIN = 14;
 	private final int UDP_PORT = 4444;
 	private final String HOST_NAME = "192.168.43.190";
-	
-	//private final int _TX_PIN = 14;
 
 	
-	public Robot(RobotMotion motion_, RobotOrientation orientation_, RobotVision vision_) {
+	public Robot() {
 		udpClient = new UDPClient(UDP_PORT, HOST_NAME);
 		irSensor = new IRSensor(IR_PIN);
 		grabber = new GrabberPiston(PISTON_PIN);
-		motion = motion_;
+		orientation = new RobotOrientation();
+		motion = new RobotMotion(new MotorDriver(_TX_PIN), orientation);
 		stateMachine = new StateMachine<Robot>(this);
-		orientation = orientation_;
 		_looper = new _RobotLooper();
-		vision = vision_;
-	}
-	
-	public void resetHardware(IOIO ioio) {
-		irSensor.reset(ioio);
+		vision = new RobotVision();
 	}
 	
 	public void update() {
@@ -54,14 +46,29 @@ public class Robot {
 	public void start() {
 		new Thread(_looper).start();
 	}
+	public void stop() {
+		_looper.stop = true;
+		while(!_looper.stopped) {
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
 	
 	private class _RobotLooper implements Runnable {
-
+		volatile boolean stop;
+		volatile boolean stopped;
 		@Override
 		public void run() {
-			while(true) {
+			stop = false;
+			stopped = false;
+			while(!stop) {
 				update();
 			}
+			stopped = true;
 		}
 	}
 	_RobotLooper _looper;

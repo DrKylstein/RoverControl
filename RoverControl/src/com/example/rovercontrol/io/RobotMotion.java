@@ -8,19 +8,13 @@ import java.util.TimerTask;
 
 import com.example.rovercontrol.control.PID;
 
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
-import android.content.Context;
-
 /**
  * @author kyle
  *
  */
 public class RobotMotion{
 	
-	private MotorDriver _driver;
+	public MotorDriver driver;
 	private PID _pid;
 	private Timer _pidTimer;
 	
@@ -41,14 +35,14 @@ public class RobotMotion{
 		public void run() {
 			_actualRotationSpeed = _orientation.getOrientation()[2];
 			_lastPIDResult = _pid.update(_actualRotationSpeed);
-			_driver.setRotationSpeed(_lastPIDResult);
-			_driver.setSpeed(_speed);
+			driver.setRotationSpeed(_lastPIDResult);
+			driver.setSpeed(_speed);
 		}
 
 	}
 	
-	public RobotMotion(MotorDriver driver, RobotOrientation orientation) {
-		_driver = driver;
+	public RobotMotion(MotorDriver driver_, RobotOrientation orientation) {
+		driver = driver_;
 		_pid = new PID(_P_GAIN, _I_GAIN, _D_GAIN, _INTERVAL);
 		_pidTimer = new Timer();
 		_pidTimer.scheduleAtFixedRate(new PidTask_(), 0, (long) (_INTERVAL*1000));
@@ -56,7 +50,7 @@ public class RobotMotion{
 	}
 
 	public boolean isAvailable() {
-		return _driver.isAvailable();
+		return driver.isAvailable();
 	}
 	
 	/**

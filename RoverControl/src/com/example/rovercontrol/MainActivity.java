@@ -5,7 +5,6 @@ import android.os.IBinder;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
-import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.View;
 import android.widget.TextView;
@@ -14,7 +13,6 @@ import java.util.TimerTask;
 
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
-import org.opencv.imgproc.Imgproc;
 
 import android.content.ServiceConnection;
 import android.content.Context;
@@ -44,6 +42,12 @@ public class MainActivity extends Activity {
 	private final Context context = this;
 	
 	private Mat _previewMat;
+	
+	public void onShutdown(View view) {
+		stopService(new Intent(this, RoverService.class));
+		doUnbindService();
+		finish();
+	}
 	
 	public void onRestartService(View view) {
 		stopService(new Intent(this, RoverService.class));
