@@ -1,5 +1,7 @@
 package com.example.rovercontrol;
 
+import com.example.rovercontrol.mission.MotionTestState;
+import com.example.rovercontrol.mission.MoveToPuckState;
 import com.example.rovercontrol.mission.VisionTestState;
 import android.content.Intent;
 import android.os.IBinder;
@@ -26,7 +28,7 @@ public class RoverService extends IOIOService {
 		_robot = new Robot();
 		_robot.vision.load(this);
 		_robot.orientation.register(this);
-		_robot.stateMachine.changeState(new VisionTestState());
+		_robot.stateMachine.changeState(new MoveToPuckState());
 		_robot.start();
 	}
 	
@@ -115,11 +117,6 @@ public class RoverService extends IOIOService {
 	@Override
 	public IBinder onBind(Intent arg0) {
 		return _binder;
-	}
-
-	public String getCurrentState() {
-		// TODO Auto-generated method stub
-		return _robot.stateMachine.getStateName();
 	}
 
 }

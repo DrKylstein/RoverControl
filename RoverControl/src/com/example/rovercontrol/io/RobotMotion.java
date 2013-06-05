@@ -25,9 +25,9 @@ public class RobotMotion{
 	
 	private RobotOrientation _orientation;
 	
-	private final double _P_GAIN = 0.06;
+	private final double _P_GAIN = 1.0;//0.06;
 	private final double _I_GAIN = 0.0;
-	private final double _D_GAIN = 0.005;
+	private final double _D_GAIN = 0.0;//0.005;
 	private final double _INTERVAL = 0.01;
 	
 	private class PidTask_ extends TimerTask {
