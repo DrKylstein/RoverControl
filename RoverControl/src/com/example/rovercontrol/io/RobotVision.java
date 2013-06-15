@@ -11,12 +11,15 @@ import android.content.Context;
 
 public class RobotVision {
 	
+	public final int WIDTH = 180;
+	public final int HEIGHT = 320;
+	
 	private boolean _openCVGood;
 	private VideoCapture _videoCapture;
 	private Mat _rawMat; //holds initial results of video capture
 	private Mat _cameraFrame; //holds video capture after pre-processing
 	private volatile Mat _publishedFrame; //holds image result from ai
-	
+	private volatile boolean _framePublished;
 	
 	//receives callback when OpenCV is either loaded or failed to load
 	private class _LoaderCallback extends BaseLoaderCallback {
@@ -31,8 +34,9 @@ public class RobotVision {
                 case LoaderCallbackInterface.SUCCESS:
                 	_openCVGood = true;
                 	_videoCapture = new VideoCapture(0);
-                	_cameraFrame = new Mat(640, 360, CvType.CV_8UC4);
+                	_cameraFrame = new Mat(HEIGHT, WIDTH, CvType.CV_8UC4);
                 	_rawMat = new Mat(_cameraFrame.width(), _cameraFrame.height(), _cameraFrame.type());
+                	_publishedFrame = new Mat(HEIGHT, WIDTH, CvType.CV_8UC4);
                 	break;
                 default:
                 	//System.out.printf("", status);
@@ -75,15 +79,15 @@ public class RobotVision {
 	 * Manually grab frame from camera
 	 * @return OpenCv Matrix containing copy of the image
 	 */
-	public Mat grabFrame() {
+	public void grabFrame(Mat dest) {
 		if(_videoCapture.grab()) {
 			_videoCapture.retrieve(_rawMat);
 			synchronized(_cameraFrame) {
 				Core.flip(_rawMat.t(), _cameraFrame, 1);
-				return _cameraFrame.clone();
+				_cameraFrame.copyTo(dest);
 			}
 		}
-		return null;
+		return;
 		//return currentFrame;
 	}
 	/**
@@ -92,21 +96,26 @@ public class RobotVision {
 	 */
 	public void publishFrame(Mat newMat) {
 		//synchronized(_previewMat) { //switched to volatile, I don't think null supports locks!
-			_publishedFrame = newMat;
+			newMat.copyTo(_publishedFrame);
+			_framePublished = true;
 		//}
 	}
 	/**
 	 * Get a copy of the last published frame
 	 * @return
 	 */
-	public Mat getPublishedFrame() {
+	public void getPublishedFrame(Mat dest) {
 		if(_publishedFrame != null) {
 			synchronized(_publishedFrame) {
-				return _publishedFrame.clone();
+				_publishedFrame.copyTo(dest);
 			}
 		}
-		return null;
-	}	
+		_framePublished = false;
+		return;
+	}
+	public boolean framePublished() {
+		return _framePublished;
+	}
 	/**
 	 * Call when service exits or the camera may be left on
 	 */

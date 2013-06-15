@@ -1,6 +1,7 @@
 package com.example.rovercontrol.mission;
 
 import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
@@ -12,6 +13,10 @@ import com.example.rovercontrol.control.State;
 
 public class VisionTestState implements State<Robot> {
 
+	private Mat frame;
+	private Mat circles;
+	private boolean _init = false;
+	
 	@Override
 	public void onEnter(Robot robot) {
 		//robot.vision.startCapture();
@@ -27,14 +32,17 @@ public class VisionTestState implements State<Robot> {
 		if(!robot.vision.servicesAvailable()) return;
 		if(!robot.vision.cameraAvailable()) return;
 		
-		
-		Mat frame = robot.vision.grabFrame();
+		if(!_init) {
+			frame = new Mat(robot.vision.HEIGHT, robot.vision.WIDTH, CvType.CV_8UC4);
+			circles = new Mat();
+		}
+		robot.vision.grabFrame(frame);
 		
 		Imgproc.cvtColor(frame, frame, Imgproc.COLOR_BGR2GRAY);
 		Imgproc.GaussianBlur(frame, frame, new Size(11,11), 5, 5);
 		//Imgproc.threshold(frame, frame, 128, 255, Imgproc.THRESH_BINARY);
 		
-		Mat circles = new Mat();
+		
 		
 		Imgproc.HoughCircles(frame, circles, Imgproc.CV_HOUGH_GRADIENT, 1.0, 
 				frame.rows()/8, 200,28,10,150); //18 => 28

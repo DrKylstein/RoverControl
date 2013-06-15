@@ -12,6 +12,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import org.opencv.android.Utils;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
 import android.content.ServiceConnection;
@@ -107,31 +108,43 @@ public class MainActivity extends Activity {
 		super.onPause();
 	}
 	
-	public void toggleCamera(View view) {
-		if(((ToggleButton)view).isChecked()) {
-			_cameraTimer = new Timer();
-			_cameraTimer.scheduleAtFixedRate(new TimerTask() {
-
-				@Override
-				public void run() {
-					if(serviceBound_ && _robot != null) {
-						if(_robot.vision.servicesAvailable() && _robot.vision.cameraAvailable()) {
-							_updatePreview();
-						}
+	private class CameraUpdater implements Runnable {
+		
+		private volatile boolean _running = false; 
+		
+		public void stop() {
+			_running  = false;
+		}
+		
+		@Override
+		public void run() {
+			_running = true;
+			while(_running) {
+				if(serviceBound_ && _robot != null) {
+					if(_robot.vision.servicesAvailable() && _robot.vision.cameraAvailable()) {
+						_updatePreview();
 					}
 				}
-			}, 0, _cameraRate);
-		} else {
-			if(_cameraTimer != null) {
-				_cameraTimer.cancel();
 			}
+		}
+	}
+	private CameraUpdater _cameraUpdater = new CameraUpdater();
+	
+	public void toggleCamera(View view) {
+		if(((ToggleButton)view).isChecked()) {
+			new Thread(_cameraUpdater).start();
+		} else {
+			_cameraUpdater.stop();
 		}
 	}
 	
 	private void _updatePreview() {
 		if(_robot.vision.servicesAvailable() && _robot.vision.cameraAvailable()) {
-			_previewMat = _robot.vision.getPublishedFrame();
-			if(_previewMat != null && _previewMat.width() > 0 && _previewMat.height() > 0) {
+			if(_previewMat == null) {
+				_previewMat = new Mat(_robot.vision.HEIGHT, _robot.vision.WIDTH, CvType.CV_8UC4);
+			}
+			if(_robot.vision.framePublished()) {
+				_robot.vision.getPublishedFrame(_previewMat);
 				((Activity)context).runOnUiThread(new Runnable() { 
 					public void run() {
 						//Mat result = new Mat(frame.height(), frame.width(), frame.type());

@@ -41,11 +41,21 @@ public class RobotMotion{
 
 	}
 	
+	public void startPID() {
+		_pidTimer = new Timer();
+		_pidTimer.scheduleAtFixedRate(new PidTask_(), 0, (long) (_INTERVAL*1000));
+	}
+	
+	public void stopPID() {
+		_pidTimer.cancel();
+	}
+	
 	public RobotMotion(MotorDriver driver_, RobotOrientation orientation) {
 		driver = driver_;
 		_pid = new PID(_P_GAIN, _I_GAIN, _D_GAIN, _INTERVAL);
-		_pidTimer = new Timer();
-		_pidTimer.scheduleAtFixedRate(new PidTask_(), 0, (long) (_INTERVAL*1000));
+		startPID();
+		//_pidTimer = new Timer();
+		//_pidTimer.scheduleAtFixedRate(new PidTask_(), 0, (long) (_INTERVAL*1000));
 		_orientation = orientation;
 	}
 

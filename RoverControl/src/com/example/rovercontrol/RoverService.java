@@ -2,6 +2,7 @@ package com.example.rovercontrol;
 
 import com.example.rovercontrol.mission.MotionTestState;
 import com.example.rovercontrol.mission.MoveToPuckState;
+import com.example.rovercontrol.mission.RotationTestState;
 import com.example.rovercontrol.mission.VisionTestState;
 import android.content.Intent;
 import android.os.IBinder;
