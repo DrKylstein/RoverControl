@@ -25,6 +25,7 @@ public class MoveToPuckState implements State<Robot> {
 	private Mat original;
 	private Mat tapeThresh;
 	private Mat tapeHSV;
+	private Mat tapeLines;
 	private Mat dockThresh;
 	private List<MatOfPoint> contours;
 	private Mat hierarchy;
@@ -65,6 +66,7 @@ public class MoveToPuckState implements State<Robot> {
 			original = new Mat(robot.vision.HEIGHT, robot.vision.WIDTH, CvType.CV_8UC4);
 			_puckContour = new MatOfPoint();
 			dockThresh = new Mat(robot.vision.HEIGHT, robot.vision.WIDTH, CvType.CV_8UC4);
+			tapeLines = new Mat();
 		}
 		
 		robot.vision.grabFrame(original);
@@ -84,6 +86,8 @@ public class MoveToPuckState implements State<Robot> {
 		//Imgproc.GaussianBlur(tapeHSV, tapeHSV, new Size(11,11), 5, 5);
 		//tape HSV estimate: 340deg, 88%, 88%
 		Core.inRange(tapeHSV, new Scalar(170, 64, 64), new Scalar(179, 255, 255), tapeThresh);
+		Imgproc.Canny(tapeThresh, tapeThresh, 80, 100);
+		
 		
 		contours.clear();
 		mu.clear();
@@ -125,7 +129,7 @@ public class MoveToPuckState implements State<Robot> {
             break;
         }*/
 		
-		contours.clear();
+		/*.clear();
 		mu.clear();
 		mc.clear();
 		
@@ -141,7 +145,21 @@ public class MoveToPuckState implements State<Robot> {
 			if(Imgproc.contourArea(contours.get(i)) < 10) continue;
             Imgproc.drawContours(original, contours, i, new Scalar(0,255,0), 2);
             //Core.circle(original, mc.get(i), 3, new Scalar(255, 255, 0));
-        }
+        }*/
+		Log.v("MoveToPuckState", "find lines");
+		Imgproc.HoughLinesP(tapeThresh, tapeLines, 1, Math.PI/180, 50, 60, 20);
+		
+		Log.v("MoveToPuckState", "draw lines");
+		
+		for (int i = 0; i < tapeLines.cols(); i++)
+		{
+			double data[] = tapeLines.get(0,  i);
+			if(data != null && data.length >= 4) {
+				Core.line(original, new Point(data[0], data[1]), new Point(data[2], data[3]), new Scalar(0,255,0), 3);
+			}
+		}
+		
+		Log.v("MoveToPuckState", "post");
 		
 		robot.vision.publishFrame(original);
 		
