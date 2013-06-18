@@ -4,6 +4,7 @@ import com.example.rovercontrol.control.StateMachine;
 import com.example.rovercontrol.io.GrabberPiston;
 import com.example.rovercontrol.io.IRSensor;
 import com.example.rovercontrol.io.MotorDriver;
+import com.example.rovercontrol.io.RobotGPS;
 import com.example.rovercontrol.io.RobotMotion;
 import com.example.rovercontrol.io.RobotOrientation;
 import com.example.rovercontrol.io.RobotVision;
@@ -17,6 +18,7 @@ public class Robot {
 	public RobotOrientation orientation;
 	public UDPClient udpClient;
 	public RobotVision vision;
+	public RobotGPS gps;
 	
 	private long _lastNanoTime;
 	private final int PISTON_PIN = 12;

@@ -15,6 +15,8 @@ import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
+import com.example.rovercontrol.io.RobotGPS;
+
 import android.content.ServiceConnection;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -171,6 +173,10 @@ public class MainActivity extends Activity {
 	        // Tell the user about this for our demo.
 	        Toast.makeText(MainActivity.this, "Connected to service.",
 	                Toast.LENGTH_SHORT).show();
+	        
+	        // Pass gps reference to _robot
+	        _robot.gps = new RobotGPS(getApplicationContext());
+	        
 		}
 		@Override
 		public void onServiceDisconnected(ComponentName name) {
