@@ -146,10 +146,10 @@ public class MoveToPuckState implements State<Robot> {
             Imgproc.drawContours(original, contours, i, new Scalar(0,255,0), 2);
             //Core.circle(original, mc.get(i), 3, new Scalar(255, 255, 0));
         }*/
-		Log.v("MoveToPuckState", "find lines");
+		//Log.v("MoveToPuckState", "find lines");
 		Imgproc.HoughLinesP(tapeThresh, tapeLines, 1, Math.PI/180, 50, 60, 20);
 		
-		Log.v("MoveToPuckState", "draw lines");
+		//Log.v("MoveToPuckState", "draw lines");
 		
 		for (int i = 0; i < tapeLines.cols(); i++)
 		{
@@ -159,7 +159,7 @@ public class MoveToPuckState implements State<Robot> {
 			}
 		}
 		
-		Log.v("MoveToPuckState", "post");
+		//Log.v("MoveToPuckState", "post");
 		
 		robot.vision.publishFrame(original);
 		
