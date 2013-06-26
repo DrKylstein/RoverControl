@@ -27,9 +27,9 @@ public class RoverService extends IOIOService {
 	public void onCreate() {
 		super.onCreate();
 		_robot = new Robot();
-		_robot.vision.load(this);//, "2013.06.22.07.00.22");
+		_robot.vision.load(this);
 		_robot.orientation.register(this);
-		_robot.stateMachine.changeState(new MoveToPuckState());
+		_robot.stateMachine.changeState(new VisionTestState());
 		_robot.start();
 	}
 	

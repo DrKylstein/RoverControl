@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.view.Menu;
 import android.view.View;
 import android.widget.TextView;
+
+import java.io.File;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -27,6 +29,8 @@ import android.widget.ToggleButton;
 
 public class MainActivity extends Activity {
 
+	private final String SIM_PATH = "/storage/emulated/0/RoverLog/2013.06.25.06.53.07/Forward";
+	
 	private final int _refreshRate = 500;
 	
 	//private RoverService roverService_;
@@ -37,10 +41,7 @@ public class MainActivity extends Activity {
 	private ImageView _cameraPreview;
 	
 	private Timer _infoTimer;
-	private Timer _cameraTimer;
 	private TextView _visionInfo;
-
-	private final long _cameraRate = 1000/12;
 	
 	private final Context context = this;
 	
@@ -133,10 +134,45 @@ public class MainActivity extends Activity {
 	private CameraUpdater _cameraUpdater = new CameraUpdater();
 	
 	public void toggleCamera(View view) {
-		if(((ToggleButton)view).isChecked()) {
+		ToggleButton toggle = (ToggleButton)view;
+		if(!serviceBound_ || !_robot.vision.servicesAvailable()) {
+			toggle.setChecked(false);
+			return;
+		}
+		if(toggle.isChecked()) {
 			new Thread(_cameraUpdater).start();
 		} else {
 			_cameraUpdater.stop();
+		}
+	}
+	
+	public void toggleLog(View view) {
+		ToggleButton toggle = (ToggleButton)view;
+		if(!serviceBound_ || !_robot.vision.servicesAvailable()) {
+			toggle.setChecked(false);
+			return;
+		}
+		if(toggle.isChecked()) {
+			_robot.vision.startLogging();
+		} else {
+			_robot.vision.stopLogging();
+		}
+	}
+	
+	public void toggleSim(View view) {
+		ToggleButton toggle = (ToggleButton)view;
+		if(!serviceBound_ || !_robot.vision.servicesAvailable()) {
+			toggle.setChecked(false);
+			return;
+		}
+		if(toggle.isChecked()) {
+			if(new File(SIM_PATH).exists()) {
+				_robot.vision.startSimulation(SIM_PATH);
+			} else {
+				toggle.setChecked(false);
+			}
+		} else {
+			_robot.vision.stopSimulation();
 		}
 	}
 	

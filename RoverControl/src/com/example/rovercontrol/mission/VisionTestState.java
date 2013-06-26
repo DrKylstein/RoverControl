@@ -8,6 +8,8 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
+import android.util.Log;
+
 import com.example.rovercontrol.Robot;
 import com.example.rovercontrol.control.State;
 
@@ -38,7 +40,9 @@ public class VisionTestState implements State<Robot> {
 		}
 		robot.vision.grabFrame(frame);
 		
-		Imgproc.cvtColor(frame, frame, Imgproc.COLOR_BGR2GRAY);
+		assert frame != null : "VisionTestState: null frame!";
+		
+		/*Imgproc.cvtColor(frame, frame, Imgproc.COLOR_BGR2GRAY);
 		Imgproc.GaussianBlur(frame, frame, new Size(11,11), 5, 5);
 		//Imgproc.threshold(frame, frame, 128, 255, Imgproc.THRESH_BINARY);
 		
@@ -56,7 +60,7 @@ public class VisionTestState implements State<Robot> {
 				Core.circle(frame, pt, radius, new Scalar(0,255,0));
 				Core.circle(frame, pt, 3, new Scalar(0,0,255));
 			}
-		}
+		}*/
 		
 		robot.vision.publishFrame(frame);
 		

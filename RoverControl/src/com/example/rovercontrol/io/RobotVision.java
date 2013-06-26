@@ -20,91 +20,107 @@ import android.os.Environment;
 import android.util.Log;
 
 public class RobotVision {
-	
+
 	public final int WIDTH = 180;
 	public final int HEIGHT = 320;
-	
+
 	private boolean _openCVGood;
 	private VideoCapture _videoCapture;
 	private Mat _rawMat; //holds initial results of video capture
 	private Mat _cameraFrame; //holds video capture after pre-processing
 	private volatile Mat _publishedFrame; //holds image result from ai
 	private volatile boolean _framePublished;
-	private File _path;
-	private final String _imagesDir = "%s/RoverLog/%s/Forward/";
+
+	private volatile boolean _logEnabled;
+	private File _logPath;
+	private final String _logPathFormat = "%s/RoverLog/%s/Forward/";
 	private SimpleDateFormat _imageStamp;
-	
-	private String _simFolder = null;
-	private String _simPath;
-	private Mat[] _simulation = null;
-	private int _currentSimFrame = 0;
-	
-	private void _init() {
-	    Date today = Calendar.getInstance().getTime();
-	    SimpleDateFormat formatter = new SimpleDateFormat("yyyy.MM.dd.hh.mm.ss", Locale.US);
-	    _imageStamp = new SimpleDateFormat("hh.mm.ss.SSS", Locale.US);
-	    String folderName = formatter.format(today);
+
+	private volatile boolean _simEnabled;
+	private Mat[] _simFrames;
+	private int _simPos;
+
+	private final String tag = "RobotVision";
+
+	/**
+	 * Begins logging captured images to ExternalStorage:/RoverLog/<Date/Time>/Forward/<Time>.png
+	 */
+	public void startLogging() {
+		Date today = Calendar.getInstance().getTime();
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy.MM.dd.hh.mm.ss", Locale.US);
+		_imageStamp = new SimpleDateFormat("hh.mm.ss.SSS", Locale.US);
+		String folderName = formatter.format(today);
+		_logPath = new File(String.format(_logPathFormat, Environment.getExternalStorageDirectory(), folderName));
+		_logPath.mkdirs();
+		_logEnabled = true;
+		Log.v(tag, "Image logging started.");
+	}
+
+	/**
+	 * Stops logging images.
+	 */
+	public void stopLogging() {
+		_logEnabled = false;
+		Log.v(tag, "Image logging stopped.");
+	}
+
+	/**
+	 * Begins taking images from the specified path instead of the camera.
+	 * @param path
+	 */
+	public synchronized void startSimulation(String path) {
+		_simEnabled = false;
+		File dir = new File(path);
+		if(!dir.exists()) return;
+		String[] fileList = dir.list();
+		Arrays.sort(fileList);
 		
-		_path = new File(String.format(_imagesDir, Environment.getExternalStorageDirectory(), folderName));
-		_path.mkdirs();
-		_openCVGood = true;
-		if(_simFolder == null) {
-			_videoCapture = new VideoCapture(0);
-		} else {
-			File path = new File(String.format(_imagesDir, Environment.getExternalStorageDirectory(), _simFolder));
-			_simPath = path.toString();
-			String[] fileList = path.list();
-			Arrays.sort(fileList);
-			_simulation = new Mat[fileList.length];
-			for(int i = 0; i < fileList.length; i++) {
-				_simulation[i] = Highgui.imread(_simPath+"/"+fileList[i]);
+		_simFrames = new Mat[fileList.length];
+		for(int i = 0; i < fileList.length; i++) {
+			_simFrames[i] = Highgui.imread(path+"/"+fileList[i]);
+			if(_simFrames[i].width() == 0 || _simFrames[i].height() == 0) {
+				Log.e(tag, "Bad simulation image: "+path+"/"+fileList[i]);
+				return;
 			}
 		}
+		_simPos = 0;
+		_simEnabled = true;
+		Log.v(tag, "Simulated image stream started.");
+	}
+
+	/**
+	 * Resumes taking images from the live camera.
+	 */
+	public void stopSimulation() {
+		_simEnabled = false;
+		Log.v(tag, "Simulated image stream stopped.");
+	}
+
+	/**
+	 * Because so many things depend on OpenCV being loaded, we do initializations here.
+	 */
+	private void _init() {
+		_videoCapture = new VideoCapture(0);
 		_cameraFrame = new Mat(HEIGHT, WIDTH, CvType.CV_8UC4);
 		_rawMat = new Mat(HEIGHT, WIDTH, CvType.CV_8UC4);
 		_publishedFrame = new Mat(HEIGHT, WIDTH, CvType.CV_8UC4);
+		_openCVGood = true;
 	}
-	
-	//receives callback when OpenCV is either loaded or failed to load
-	private class _LoaderCallback extends BaseLoaderCallback {
-        public _LoaderCallback(Context AppContext) {
-			super(AppContext);
-			// TODO Auto-generated constructor stub
-		}
 
-		@Override
-        public void onManagerConnected(int status) {
-            switch (status) {
-                case LoaderCallbackInterface.SUCCESS:
-                	_init();
-                	break;
-                default:
-                	//System.out.printf("", status);
-                    assert(false);
-                    break;
-            }
-        }
-    }
-	private _LoaderCallback _loaderCallback;
-    
 	/**
-	 * Initialize OpenCV.
+	 * Bind to OpenCV library separately installed on the device.
 	 * @param context
 	 */
 	public void load(Context context) {
-		_loaderCallback = new _LoaderCallback(context);
 		_openCVGood = false;
-		OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, context, _loaderCallback);
-	}
-	/**
-	 * Initialize OpenCV.
-	 * @param context
-	 * @param folder  where to grab simulated images from
-	 */
-	public void load(Context context, String folder) {
-		_simFolder  = folder;
-		
-		load(context);
+		OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, context, new BaseLoaderCallback(context) {
+			@Override
+			public void onManagerConnected(int status) {
+				if(status == LoaderCallbackInterface.SUCCESS) {
+					_init();
+				}
+			}
+		});
 	}
 	/**
 	 * Used to determine if OpenCV is available. 
@@ -122,7 +138,7 @@ public class RobotVision {
 	 */
 	public boolean cameraAvailable() {
 		if(!_openCVGood) return false;
-		if(_simulation != null) return true;
+		if(_simFrames != null) return true;
 		if(_videoCapture == null) return false;
 		return _videoCapture.isOpened();
 	}
@@ -131,38 +147,34 @@ public class RobotVision {
 	 * @return OpenCv Matrix containing copy of the image
 	 */
 	public void grabFrame(Mat dest) {
-		if(_simulation != null) {
-			if(_simulation[_currentSimFrame] != null) {
-				synchronized(_cameraFrame) {
-					_simulation[_currentSimFrame].copyTo(_cameraFrame);
-				}
-				_currentSimFrame = (_currentSimFrame + 1) % _simulation.length;
-				_cameraFrame.copyTo(dest);
-			}
-			return;
-		}
 		if(_videoCapture.grab()) {
 			_videoCapture.retrieve(_rawMat);
 			synchronized(_cameraFrame) {
 				Core.flip(_rawMat.t(), _cameraFrame, 1);
-				_cameraFrame.copyTo(dest);
+				if(!_simEnabled) {
+					_cameraFrame.copyTo(dest);
+				} else { //going through the motions to be as close to real as possible
+					// actually it's because the program locked up when I tried taking shortcuts
+					_simFrames[_simPos].copyTo(dest);
+					_simPos = (_simPos + 1) % _simFrames.length;
+				}
 			}
-			_saveImage(_cameraFrame);
+			if(_logEnabled) {
+				_saveImage(_cameraFrame);
+			}
 		}
 	}
 	/**
 	 * make a processed frame available to viewers
-	 * @param newMat the frame, which is taken as reference. Do not attempt to access it again directly.
+	 * @param newMat the frame to copy the image from
 	 */
 	public void publishFrame(Mat newMat) {
-		//synchronized(_previewMat) { //switched to volatile, I don't think null supports locks!
-			newMat.copyTo(_publishedFrame);
-			_framePublished = true;
-		//}
+		newMat.copyTo(_publishedFrame);
+		_framePublished = true;
 	}
 	/**
 	 * Get a copy of the last published frame
-	 * @return
+	 * @param dest A suitable matrix for copying the image to
 	 */
 	public void getPublishedFrame(Mat dest) {
 		if(_publishedFrame != null) {
@@ -171,7 +183,6 @@ public class RobotVision {
 			}
 		}
 		_framePublished = false;
-		return;
 	}
 	public boolean framePublished() {
 		return _framePublished;
@@ -184,8 +195,8 @@ public class RobotVision {
 			_videoCapture.release();
 		}
 	}
-	
+
 	private void _saveImage (Mat mat) {
-		Highgui.imwrite(new File(_path, String.format("%s.png",_imageStamp.format(new Date()))).toString(), mat);
+		Highgui.imwrite(new File(_logPath, String.format("%s.png",_imageStamp.format(new Date()))).toString(), mat);
 	}
 }
