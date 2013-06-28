@@ -60,7 +60,7 @@ public class RoverService extends IOIOService {
 				InterruptedException {
 				_led.write(true);
 				//_robot.update();
-				_led.write(false);
+				//_led.write(false);
 			}
 		};
 	}

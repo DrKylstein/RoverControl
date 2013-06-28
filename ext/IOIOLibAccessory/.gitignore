@@ -4,3 +4,5 @@ libs/*
 lint.xml
 log.txt
 proguard-project.txt
+/bin
+.settings
