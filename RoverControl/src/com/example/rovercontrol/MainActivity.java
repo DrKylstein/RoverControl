@@ -29,7 +29,7 @@ import android.widget.ToggleButton;
 
 public class MainActivity extends Activity {
 
-	private final String SIM_PATH = "/storage/emulated/0/RoverLog/2013.06.25.06.53.07/Forward";
+	private final String SIM_PATH = "/storage/emulated/0/RoverLog/2013.06.27.09.43.23/Forward";
 	
 	private final int _refreshRate = 500;
 	
@@ -153,9 +153,9 @@ public class MainActivity extends Activity {
 			return;
 		}
 		if(toggle.isChecked()) {
-			_robot.vision.startLogging();
+			_robot.startLogging();
 		} else {
-			_robot.vision.stopLogging();
+			_robot.stopLogging();
 		}
 	}
 	

@@ -29,7 +29,7 @@ public class RoverService extends IOIOService {
 		_robot = new Robot();
 		_robot.vision.load(this);
 		_robot.orientation.register(this);
-		_robot.stateMachine.changeState(new VisionTestState());
+		_robot.stateMachine.changeState(new MotionTestState());
 		_robot.start();
 	}
 	
@@ -60,7 +60,7 @@ public class RoverService extends IOIOService {
 				InterruptedException {
 				_led.write(true);
 				//_robot.update();
-				//_led.write(false);
+				_led.write(false);
 			}
 		};
 	}

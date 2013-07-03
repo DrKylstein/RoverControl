@@ -85,7 +85,7 @@ public class MoveToPuckState implements State<Robot> {
 		Imgproc.cvtColor(original, tapeHSV, Imgproc.COLOR_BGR2HSV);
 		//Imgproc.GaussianBlur(tapeHSV, tapeHSV, new Size(11,11), 5, 5);
 		//tape HSV estimate: 340deg, 88%, 88%
-		Core.inRange(tapeHSV, new Scalar(170, 64, 64), new Scalar(179, 255, 255), tapeThresh);
+		Core.inRange(tapeHSV, new Scalar(170, 64, 64), new Scalar(180, 255, 255), tapeThresh);
 		Imgproc.Canny(tapeThresh, tapeThresh, 80, 100);
 		
 		
@@ -186,7 +186,7 @@ public class MoveToPuckState implements State<Robot> {
 	@Override
 	public String getName() {
 		// TODO Auto-generated method stub
-		return "Moving towards Puck";
+		return "MovingToPuckState";
 	}
 
 }

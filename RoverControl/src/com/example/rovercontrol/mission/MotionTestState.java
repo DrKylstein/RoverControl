@@ -12,40 +12,29 @@ import com.example.rovercontrol.control.State;
  */
 public class MotionTestState implements State<Robot> {
 	
-	//private final long SECOND = 1000000000;
-	
-	/* (non-Javadoc)
-	 * @see com.example.rovercontrol.State#onEnter()
-	 */
 	@Override
 	public void onEnter(Robot robot) {
 		
 	}
 
-	/* (non-Javadoc)
-	 * @see com.example.rovercontrol.State#onExit()
-	 */
 	@Override
 	public void onExit(Robot robot) {
 		
 	}
 
-	/* (non-Javadoc)
-	 * @see com.example.rovercontrol.State#update(long, com.example.rovercontrol.StateMachine)
-	 */
 	@Override
 	public void update(long dtNanos, Robot robot) {
 		robot.motion.setSpeed(0.5);
 		robot.motion.setRotationSpeed(0.0);
+		if(robot.vision.servicesAvailable() && robot.vision.cameraAvailable()) {
+			robot.vision.grabToLog();
+		}
 	}
 
-	/* (non-Javadoc)
-	 * @see com.example.rovercontrol.State#getName()
-	 */
 	@Override
 	public String getName() {
 		// TODO Auto-generated method stub
-		return "Trying to walk straight. (Motion Test)";
+		return "MotionTestState";
 	}
 
 }

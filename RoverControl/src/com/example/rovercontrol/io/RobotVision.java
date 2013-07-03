@@ -43,7 +43,7 @@ public class RobotVision {
 	private final String tag = "RobotVision";
 
 	/**
-	 * Begins logging captured images to ExternalStorage:/RoverLog/<Date/Time>/Forward/<Time>.png
+	 * Begins logging captured images to ExternalStorage:/RoverLog/yyyy.MM.dd.hh.mm.ss/Forward/hh.mm.ss.SSS.png
 	 */
 	public void startLogging() {
 		Date today = Calendar.getInstance().getTime();
@@ -164,6 +164,20 @@ public class RobotVision {
 			}
 		}
 	}
+	
+	/**
+	 * 
+	 */
+	public void grabToLog() {
+		if(_logEnabled && _videoCapture.grab()) {
+			_videoCapture.retrieve(_rawMat);
+			synchronized(_cameraFrame) {
+				Core.flip(_rawMat.t(), _cameraFrame, 1);
+			}
+			_saveImage(_cameraFrame);
+		}
+	}
+	
 	/**
 	 * make a processed frame available to viewers
 	 * @param newMat the frame to copy the image from
