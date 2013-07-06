@@ -1,9 +1,5 @@
 package com.example.rovercontrol;
 
-import com.example.rovercontrol.mission.MotionTestState;
-import com.example.rovercontrol.mission.MoveToPuckState;
-import com.example.rovercontrol.mission.RotationTestState;
-import com.example.rovercontrol.mission.VisionTestState;
 import android.content.Intent;
 import android.os.IBinder;
 import ioio.lib.util.android.IOIOService;
@@ -29,7 +25,6 @@ public class RoverService extends IOIOService {
 		_robot = new Robot();
 		_robot.vision.load(this);
 		_robot.orientation.register(this);
-		_robot.stateMachine.changeState(new MotionTestState());
 		_robot.start();
 	}
 	

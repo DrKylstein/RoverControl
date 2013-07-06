@@ -20,7 +20,8 @@ public class MotorTestState implements State<Robot> {
 	@Override
 	public void update(long dtNanos, Robot owner) {
 		// TODO Auto-generated method stub
-		
+		owner.motion.driver.setSpeed(0.5);
+		owner.motion.driver.setRotationSpeed(0.0);
 	}
 
 	@Override

@@ -21,6 +21,7 @@ import com.example.rovercontrol.io.RobotMotion;
 import com.example.rovercontrol.io.RobotOrientation;
 import com.example.rovercontrol.io.RobotVision;
 import com.example.rovercontrol.io.UDPClient;
+import com.example.rovercontrol.mission.MotionTestState;
 
 public class Robot {
 	public RobotMotion motion;
@@ -39,6 +40,18 @@ public class Robot {
 	private final int UDP_PORT = 4444;
 	private final String HOST_NAME = "192.168.43.190";
 	private final String tag = "Robot";
+	
+	/*
+	 * 1.0 -> -0.58 rad/s
+	 * -1.0 -> 0.55 rad/s
+	 * 0.5 -> -0.3 rad/s
+	 * -0.5 -> 0.3 rad/s
+	 */
+	private final double RADPS = 0.6;
+	
+	private final double _P_GAIN = 0.3;
+	private final double _I_GAIN = 0.0;
+	private final double _D_GAIN = 0.0;
 	
 	private volatile boolean _logEnabled = false;
 	private final String _logPathFormat = "%s/RoverLog/%s/robot.txt";
@@ -65,7 +78,8 @@ public class Robot {
 		irSensor = new IRSensor(IR_PIN);
 		grabber = new GrabberPiston(PISTON_PIN);
 		orientation = new RobotOrientation();
-		motion = new RobotMotion(new MotorDriver(_TX_PIN), orientation);
+		motion = new RobotMotion(new MotorDriver(_TX_PIN), orientation, RADPS);
+		motion.configurePID(_P_GAIN, _I_GAIN, _D_GAIN);
 		stateMachine = new StateMachine<Robot>(this);
 		_looper = new _RobotLooper();
 		vision = new RobotVision();
@@ -95,6 +109,8 @@ public class Robot {
 	}
 	
 	public void start() {
+		motion.startPID();
+		stateMachine.changeState(new MotionTestState());
 		new Thread(_looper).start();
 	}
 	public void stop() {
