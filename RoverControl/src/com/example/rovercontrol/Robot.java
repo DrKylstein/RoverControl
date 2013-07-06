@@ -1,27 +1,15 @@
 package com.example.rovercontrol;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
-
-import android.os.Environment;
-import android.util.Log;
-
 import com.example.rovercontrol.control.StateMachine;
 import com.example.rovercontrol.io.GrabberPiston;
 import com.example.rovercontrol.io.IRSensor;
 import com.example.rovercontrol.io.MotorDriver;
+import com.example.rovercontrol.io.Multicast;
 import com.example.rovercontrol.io.RobotGPS;
 import com.example.rovercontrol.io.RobotMotion;
 import com.example.rovercontrol.io.RobotOrientation;
 import com.example.rovercontrol.io.RobotVision;
 import com.example.rovercontrol.io.UDPClient;
-import com.example.rovercontrol.mission.MotionTestState;
 
 public class Robot {
 	public RobotMotion motion;
@@ -32,6 +20,7 @@ public class Robot {
 	public UDPClient udpClient;
 	public RobotVision vision;
 	public RobotGPS gps;
+	public Multicast multicast;
 	
 	private long _lastNanoTime;
 	private final int PISTON_PIN = 12;
@@ -75,6 +64,7 @@ public class Robot {
 	
 	public Robot() {
 		udpClient = new UDPClient(UDP_PORT, HOST_NAME);
+		multicast = new Multicast("203.0.113.0", 4444);
 		irSensor = new IRSensor(IR_PIN);
 		grabber = new GrabberPiston(PISTON_PIN);
 		orientation = new RobotOrientation();
@@ -112,6 +102,7 @@ public class Robot {
 		motion.startPID();
 		stateMachine.changeState(new MotionTestState());
 		new Thread(_looper).start();
+		new Thread(multicast).start();
 	}
 	public void stop() {
 		_looper.stop = true;
